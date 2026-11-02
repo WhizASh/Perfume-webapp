@@ -52,6 +52,8 @@ VITE_WHATSAPP_NUMBER=919876543210
 
 ### 3. Start Development Server
 ```bash
+npm start
+# or
 npm run dev
 ```
 
@@ -66,6 +68,13 @@ npm run preview
 ## Admin Portal
 
 Visit `/admin` in your browser.
+
+### Demo / Offline Mode Credentials:
+- **User ID / Email**: `admin@ikkperfume.com`
+- **Password**: `admin123`
+
+### Live Firebase Auth Setup:
 1. Enable **Email/Password** in Firebase Console under **Authentication > Sign-in method**.
 2. Add an admin user in Firebase Console under **Authentication > Users**.
-3. Sign in at `/admin` to upload new fragrance photos to Firebase Storage and view orders.
+3. Add your Firebase keys to `.env`.
+4. Sign in at `/admin` using your Firebase admin email and password.

@@ -12,6 +12,7 @@ import Admin from './pages/Admin';
 
 import { AuthProvider } from './context/AuthContext';
 import { ProductProvider } from './context/ProductContext';
+import { CarouselProvider } from './context/CarouselContext';
 
 import './index.css';
 
@@ -67,7 +68,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route
           path="*"
-          element={<div className="p-20 text-center">Page not found</div>}
+          element={<div className="p-20 text-center text-zinc-400">Page not found</div>}
         />
       </Routes>
 
@@ -88,7 +89,9 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
       <ProductProvider>
-        <App />
+        <CarouselProvider>
+          <App />
+        </CarouselProvider>
       </ProductProvider>
     </AuthProvider>
   </React.StrictMode>

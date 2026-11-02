@@ -1,0 +1,36 @@
+// Default luxury hero carousel slides inspired by fkperfume.com with promotional tags
+export const initialSlides = [
+  {
+    id: 'slide-royal-oud',
+    tag: 'LIMITED EDITION · ROYAL ARCHIVE',
+    title: 'The Sovereign Oud Collection',
+    subtitle: 'Where Arabian Majesty Meets Haute French Perfumery',
+    description: 'Distilled from rare wild agarwood aged over twenty years, infused with velvet Damascus rose and golden saffron threads.',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1920&q=90',
+    ctaText: 'EXPLORE THE OUD LINE',
+    ctaLink: '/shop?family=Oud',
+    active: true,
+  },
+  {
+    id: 'slide-artisanal-attars',
+    tag: 'FESTIVE OFFER · 15% OFF ATTARS',
+    title: 'Pure Artisanal Attars',
+    subtitle: '100% Alcohol-Free Concentrated Nectar',
+    description: 'Centuries of uncompromised heritage distilled in pure crystalline crystal flacons. Enduring scents that linger for days.',
+    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1920&q=90',
+    ctaText: 'DISCOVER ATTARS',
+    ctaLink: '/shop?family=Attar',
+    active: true,
+  },
+  {
+    id: 'slide-signature-blends',
+    tag: 'HOUSE SIGNATURE · COMPLIMENTARY SHIPPING',
+    title: 'Scents That Command Presence',
+    subtitle: 'Crafted For Connoisseurs of Unrivaled Distinction',
+    description: 'Immerse your senses in luminous florals, intoxicating spices, and smoldering amber woods crafted without boundaries.',
+    image: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1920&q=90',
+    ctaText: 'SHOP ALL FRAGRANCES',
+    ctaLink: '/shop',
+    active: true,
+  },
+];

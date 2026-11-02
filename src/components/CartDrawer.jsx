@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Minus, Plus, Trash2, MessageCircle, ArrowRight, Check } from 'lucide-react';
+import { X, Minus, Plus, Trash2, MessageCircle, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { proceedToWhatsAppCheckout } from '../services/whatsappService';
 
 export default function CartDrawer({
@@ -17,7 +17,9 @@ export default function CartDrawer({
 
   if (!open) return null;
 
-  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const subtotal = items.reduce((s, i) => s + (Number(i.sellingPrice ?? i.price) || 0) * i.quantity, 0);
+  const totalMrp = items.reduce((s, i) => s + (Number(i.mrp || i.sellingPrice || i.price) || 0) * i.quantity, 0);
+  const totalSavings = totalMrp - subtotal;
 
   const handleWhatsAppCheckout = async (e) => {
     if (e) e.preventDefault();
@@ -50,16 +52,19 @@ export default function CartDrawer({
     <div className="fixed inset-0 z-50">
       <button
         aria-label="Close cart"
-        className="absolute inset-0 w-full bg-black/50 backdrop-blur-xs"
+        className="absolute inset-0 w-full bg-black/75 backdrop-blur-xs"
         onClick={onClose}
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-[#F7F1E8] p-6 shadow-2xl">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-[#D4AF37]/25 bg-[#121212] p-6 shadow-2xl text-[#F5F5F7]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#D9CBBB] pb-5">
-          <h2 className="font-editorial text-3xl text-[#581F2A]">
-            Your Bag ({items.reduce((s, i) => s + i.quantity, 0)})
-          </h2>
+        <div className="flex items-center justify-between border-b border-[#D4AF37]/20 pb-5">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-[#D4AF37]" />
+            <h2 className="font-editorial text-2xl font-semibold tracking-wider text-white">
+              Your Fragrance Bag ({items.reduce((s, i) => s + i.quantity, 0)})
+            </h2>
+          </div>
           <button
             onClick={() => {
               setOrderComplete(null);
@@ -67,176 +72,171 @@ export default function CartDrawer({
               onClose();
             }}
             aria-label="Close cart"
-            className="hover:text-[#581F2A]"
+            className="text-zinc-400 hover:text-[#D4AF37] transition-colors"
           >
-            <X />
+            <X size={22} />
           </button>
         </div>
 
         {/* Order Completion Notice */}
         {orderComplete ? (
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-            <div className="grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-800">
+            <div className="grid size-14 place-items-center rounded-full border border-[#D4AF37] bg-[#1A1A1A] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)]">
               <Check size={28} />
             </div>
-            <h3 className="mt-4 font-editorial text-3xl text-[#581F2A]">
-              Order Prepared!
+            <h3 className="mt-4 font-editorial text-3xl text-[#F5F5F7]">
+              Order Transmitted!
             </h3>
-            <p className="mt-2 text-xs text-[#75665A]">
-              Order Reference: <strong className="text-[#29211F]">#{orderComplete.orderId}</strong>
+            <p className="mt-2 text-xs text-zinc-400">
+              Order Reference: <strong className="text-[#E5C378]">#{orderComplete.orderId}</strong>
             </p>
-            <p className="mt-3 max-w-xs text-xs leading-6 text-[#75665A]">
-              We have redirected you to WhatsApp to finalize your delivery and payment directly with the store owner.
+            <p className="mt-3 max-w-xs text-xs leading-6 text-zinc-400">
+              Your luxury order is prepared. You have been redirected to WhatsApp to confirm delivery details with the master perfumer.
             </p>
             <button
               onClick={() => {
                 setOrderComplete(null);
                 onClose();
               }}
-              className="mt-6 bg-[#581F2A] px-6 py-2.5 text-xs font-semibold tracking-wider text-white"
+              className="mt-6 border border-[#D4AF37] bg-[#D4AF37] px-6 py-2.5 text-xs font-bold tracking-wider text-black hover:bg-[#E5C378]"
             >
-              CONTINUE SHOPPING
+              CONTINUE BROWSING
+            </button>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <p className="font-editorial text-2xl text-zinc-400">Your bag is currently empty.</p>
+            <p className="mt-2 text-xs text-zinc-500">
+              Explore our royal ouds and artisanal attars.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-6 border border-[#D4AF37] bg-[#161616] px-6 py-2.5 text-xs font-bold tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black"
+            >
+              EXPLORE COLLECTION
             </button>
           </div>
         ) : (
           <>
-            {/* Cart Items List */}
-            <div className="flex-1 space-y-5 overflow-auto py-6">
-              {items.length === 0 ? (
-                <div className="py-12 text-center">
-                  <p className="text-sm text-[#75665A]">
-                    Your bag is empty. Discover your signature fragrance.
-                  </p>
-                </div>
-              ) : (
-                items.map((i) => (
-                  <div
-                    key={i.id}
-                    className="flex gap-4 border-b border-[#E9DED0] pb-4"
-                  >
-                    <img
-                      src={i.image}
-                      alt={i.name}
-                      className="h-28 w-24 bg-[#E9DED0] object-cover"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-editorial text-2xl text-[#581F2A]">
-                        {i.name}
-                      </h3>
-                      <p className="text-xs text-[#75665A]">{i.size || '50 ml'}</p>
-                      <p className="mt-1 text-sm font-semibold">
-                        ₹{(i.price * i.quantity).toLocaleString('en-IN')}
-                      </p>
-
-                      <div className="mt-3 flex items-center gap-4">
-                        <button
-                          aria-label="Decrease quantity"
-                          className="hover:text-[#581F2A]"
-                          onClick={() => onQuantity(i.id, -1)}
-                        >
-                          <Minus size={15} />
-                        </button>
-                        <span className="min-w-4 text-center text-xs font-semibold">
-                          {i.quantity}
+            {/* Items List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-[#D4AF37]/10 pr-1 my-4">
+              {items.map((item) => (
+                <div key={item.id} className="flex gap-4 py-4 items-center">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="size-16 shrink-0 object-cover border border-[#D4AF37]/20 bg-[#0A0A0A]"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-editorial text-lg text-[#F5F5F7] truncate">
+                      {item.name}
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-wider text-[#D4AF37]">
+                      {item.size || '50 ml'}
+                    </p>
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <span className="text-xs font-semibold text-[#E5C378]">
+                        ₹{(Number(item.sellingPrice ?? item.price) || 0).toLocaleString('en-IN')}
+                      </span>
+                      {item.mrp && Number(item.mrp) > Number(item.sellingPrice ?? item.price) && (
+                        <span className="text-[10.5px] text-zinc-500 line-through">
+                          ₹{Number(item.mrp).toLocaleString('en-IN')}
                         </span>
-                        <button
-                          aria-label="Increase quantity"
-                          className="hover:text-[#581F2A]"
-                          onClick={() => onQuantity(i.id, 1)}
-                        >
-                          <Plus size={15} />
-                        </button>
-                        <button
-                          aria-label="Remove item"
-                          className="ml-auto text-[#75665A] hover:text-red-700"
-                          onClick={() => onQuantity(i.id, -i.quantity)}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                      )}
                     </div>
                   </div>
-                ))
-              )}
+
+                  {/* Quantity Stepper */}
+                  <div className="flex items-center border border-[#D4AF37]/30 bg-[#0A0A0A]">
+                    <button
+                      onClick={() => onQuantity(item.id, -1)}
+                      className="p-1.5 text-zinc-400 hover:text-[#D4AF37]"
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <span className="px-2 text-xs font-bold text-white">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => onQuantity(item.id, 1)}
+                      className="p-1.5 text-zinc-400 hover:text-[#D4AF37]"
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Bottom Checkout Area */}
-            {items.length > 0 && (
-              <div className="border-t border-[#D9CBBB] pt-5">
-                <div className="mb-3 flex justify-between font-semibold">
-                  <span className="text-xs tracking-wider uppercase text-[#75665A]">
-                    Subtotal
-                  </span>
-                  <span className="font-editorial text-2xl text-[#581F2A]">
+            {/* Subtotal & Direct WhatsApp Checkout */}
+            <div className="border-t border-[#D4AF37]/20 pt-4 space-y-4">
+              <div className="space-y-1">
+                {totalSavings > 0 && (
+                  <div className="flex justify-between text-xs text-zinc-400">
+                    <span>Total MRP:</span>
+                    <span className="line-through">₹{totalMrp.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {totalSavings > 0 && (
+                  <div className="flex justify-between text-xs text-emerald-400 font-semibold">
+                    <span>Discount Savings:</span>
+                    <span>-₹{totalSavings.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm pt-1">
+                  <span className="text-zinc-300 font-medium">Payable Amount:</span>
+                  <span className="font-semibold text-lg text-[#E5C378]">
                     ₹{subtotal.toLocaleString('en-IN')}
                   </span>
                 </div>
-
-                {/* Optional Customer Details for WhatsApp Message */}
-                {showCheckoutForm ? (
-                  <form onSubmit={handleWhatsAppCheckout} className="space-y-3 mb-3">
-                    <div>
-                      <input
-                        type="text"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder="Your Name (Optional)"
-                        className="w-full border border-[#D9CBBB] bg-white px-3 py-2 text-xs outline-[#581F2A]"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Delivery City / Address / Special Notes"
-                        className="w-full border border-[#D9CBBB] bg-white px-3 py-2 text-xs outline-[#581F2A]"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex w-full items-center justify-center gap-2 bg-[#25D366] py-3.5 text-xs font-semibold tracking-wider text-white shadow-sm hover:bg-[#20ba5a] disabled:opacity-50"
-                    >
-                      <MessageCircle size={16} />
-                      {isSubmitting ? 'PREPARING ORDER...' : 'SEND ORDER ON WHATSAPP'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowCheckoutForm(false)}
-                      className="w-full text-center text-[11px] text-[#75665A] hover:underline"
-                    >
-                      Back
-                    </button>
-                  </form>
-                ) : (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setShowCheckoutForm(true)}
-                      className="flex w-full items-center justify-center gap-2 bg-[#581F2A] py-4 text-xs font-semibold tracking-widest text-white hover:bg-[#3f151d]"
-                    >
-                      <span>ORDER VIA WHATSAPP</span>
-                      <ArrowRight size={14} />
-                    </button>
-
-                    <button
-                      onClick={() => handleWhatsAppCheckout()}
-                      disabled={isSubmitting}
-                      className="flex w-full items-center justify-center gap-2 bg-[#25D366] py-3 text-xs font-semibold tracking-wider text-white hover:bg-[#20ba5a] disabled:opacity-50"
-                    >
-                      <MessageCircle size={15} />
-                      <span>QUICK ORDER (1-CLICK)</span>
-                    </button>
-
-                    <p className="pt-1 text-center text-[11px] text-[#75665A]">
-                      No account required. Redirects directly to store owner on WhatsApp.
-                    </p>
-                  </div>
-                )}
               </div>
-            )}
+
+              {subtotal >= 2999 ? (
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
+                  <Sparkles size={12} /> Eligible for Complimentary Royal Shipping
+                </p>
+              ) : (
+                <p className="text-[11px] text-zinc-400">
+                  Add ₹{(2999 - subtotal).toLocaleString('en-IN')} more for Complimentary Royal Shipping
+                </p>
+              )}
+
+              {/* Optional Name/Notes dropdown */}
+              {!showCheckoutForm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCheckoutForm(true)}
+                  className="text-[11px] text-[#D4AF37] hover:underline block"
+                >
+                  + Add Name & Delivery Notes (Optional)
+                </button>
+              ) : (
+                <div className="space-y-2 border border-[#D4AF37]/20 bg-[#161616] p-3 text-xs">
+                  <input
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Your Name"
+                    className="w-full border border-zinc-700 bg-[#0A0A0A] p-2 text-white placeholder-zinc-500 focus:border-[#D4AF37] focus:outline-none"
+                  />
+                  <input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Delivery City / Special Instructions"
+                    className="w-full border border-zinc-700 bg-[#0A0A0A] p-2 text-white placeholder-zinc-500 focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              )}
+
+              <button
+                onClick={handleWhatsAppCheckout}
+                disabled={isSubmitting}
+                className="flex w-full items-center justify-center gap-2.5 border border-[#D4AF37] bg-[#D4AF37] py-3.5 text-xs font-bold tracking-[0.18em] text-black shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all hover:bg-[#E5C378]"
+              >
+                <MessageCircle size={16} />
+                <span>{isSubmitting ? 'CONNECTING...' : 'ORDER VIA WHATSAPP'}</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
           </>
         )}
       </aside>

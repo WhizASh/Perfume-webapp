@@ -1,60 +1,76 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Tag } from 'lucide-react';
+import { getProductDiscount } from '../services/productsService';
 
 export default function ProductCard({ product, onAddToCart }) {
-  const [liked, setLiked] = useState(false);
+  const { hasDiscount, percent, mrp, selling } = getProductDiscount(product);
 
   return (
-    <article className="group min-w-0">
-      <div className="relative overflow-hidden bg-[#E9DED0]">
+    <article className="group relative flex flex-col justify-between overflow-hidden border border-[#D4AF37]/15 bg-[#141414] p-3 transition-all duration-300 hover:border-[#D4AF37]/40 hover:shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+      {/* Product Image Container */}
+      <div className="relative overflow-hidden bg-[#0A0A0A]">
         <Link to={'/product/' + product.id}>
           <img
             loading="lazy"
             src={product.image}
             alt={product.name}
-            className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.035]"
+            className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         </Link>
 
-        {product.badge && (
-          <span className="absolute left-3 top-3 bg-[#F7F1E8] px-2 py-1 text-[9px] uppercase tracking-[.14em]">
-            {product.badge}
-          </span>
+        {/* Discount Tag (Preserved Green Sale Tag) */}
+        {hasDiscount && (
+          <div className="absolute left-2.5 top-2.5 z-10 pointer-events-none">
+            <span className="inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-black shadow-md">
+              <Tag size={10} className="stroke-[2.5]" /> SALE {percent}% OFF
+            </span>
+          </div>
         )}
 
-        <button
-          onClick={() => setLiked(!liked)}
-          aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-[#F7F1E8]"
-        >
-          <Heart size={17} fill={liked ? '#581F2A' : 'none'} />
-        </button>
-
+        {/* Add to Bag Quick Button */}
         <button
           onClick={() => onAddToCart(product)}
-          className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 bg-[#581F2A] py-3 text-[11px] font-semibold tracking-wider text-white hover:bg-[#3f151d]"
+          className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-center gap-2 border border-[#D4AF37] bg-[#D4AF37] py-2.5 text-[11px] font-bold tracking-[0.16em] text-black shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-all duration-300 hover:bg-[#E5C378] hover:border-[#E5C378] opacity-90 group-hover:opacity-100"
         >
-          <ShoppingBag size={14} /> ADD TO BAG
+          <ShoppingBag size={13} /> ADD TO BAG
         </button>
       </div>
 
-      <div className="space-y-1 pt-3">
-        <p className="text-[10px] uppercase tracking-[.16em] text-[#8C7044]">
+      {/* Details */}
+      <div className="space-y-1 pt-3.5 pb-1">
+        <p className="text-[9.5px] uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
           {product.concentration} · {product.size}
         </p>
 
         <Link to={'/product/' + product.id}>
-          <h3 className="font-editorial text-2xl text-[#581F2A]">
+          <h3 className="font-editorial text-xl font-normal text-[#F5F5F7] transition-colors group-hover:text-[#D4AF37]">
             {product.name}
           </h3>
         </Link>
 
-        <p className="text-xs text-[#75665A]">{product.notes}</p>
+        <p className="line-clamp-1 text-xs text-zinc-400 font-light">{product.notes}</p>
 
-        <p className="pt-1 text-sm font-semibold">
-          ₹{product.price.toLocaleString('en-IN')}
-        </p>
+        {/* Pricing: Discounted Selling Price, Slashed MRP, and Green Sale Tag */}
+        <div className="pt-2 flex flex-wrap items-baseline gap-2">
+          {/* Selling Price */}
+          <span className="text-base font-bold tracking-wide text-[#E5C378]">
+            ₹{selling.toLocaleString('en-IN')}
+          </span>
+
+          {/* Slashed MRP */}
+          {hasDiscount && (
+            <span className="text-xs text-zinc-500 line-through decoration-zinc-400">
+              ₹{mrp.toLocaleString('en-IN')}
+            </span>
+          )}
+
+          {/* Green Sale Tag */}
+          {hasDiscount && (
+            <span className="inline-flex items-center rounded bg-emerald-500/15 border border-emerald-500/40 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-400">
+              {percent}% OFF
+            </span>
+          )}
+        </div>
       </div>
     </article>
   );
