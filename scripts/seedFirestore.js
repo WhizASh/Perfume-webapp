@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
@@ -12,14 +15,52 @@ import { products } from '../src/data/products.js';
 import { initialCategories } from '../src/data/categories.js';
 import { initialSlides } from '../src/data/carousel.js';
 
+// Resolve and load .env file from the project root
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.resolve(__dirname, '../.env');
+
+if (typeof process.loadEnvFile === 'function' && fs.existsSync(envPath)) {
+  try {
+    process.loadEnvFile(envPath);
+  } catch (err) {
+    // Fall back to manual parsing if needed
+  }
+}
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  for (const line of envContent.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx !== -1) {
+      const key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (!process.env[key]) {
+        process.env[key] = val;
+      }
+    }
+  }
+}
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDQDeNn-o24PLtMg9Elw45r9Bd833rEEgs",
-  authDomain: "perfume-e13e1.firebaseapp.com",
-  projectId: "perfume-e13e1",
-  storageBucket: "perfume-e13e1.firebasestorage.app",
-  messagingSenderId: "229998802420",
-  appId: "1:229998802420:web:0e7917fa5e5d1068f035a1"
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
 };
+
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error('Error: Firebase configuration missing from .env');
+  console.error('Please ensure VITE_FIREBASE_API_KEY and VITE_FIREBASE_PROJECT_ID are defined in .env');
+  process.exit(1);
+}
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
