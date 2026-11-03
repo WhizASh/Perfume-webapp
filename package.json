@@ -21,5 +21,9 @@
     "react-router-dom": "^7.6.0",
     "tailwindcss": "^4.1.0",
     "vite": "^6.3.0"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.1.0",
+    "pdfjs-dist": "^6.5.438"
   }
 }

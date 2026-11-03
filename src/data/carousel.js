@@ -7,8 +7,8 @@ export const initialSlides = [
     subtitle: 'Where Arabian Majesty Meets Haute French Perfumery',
     description: 'Distilled from rare wild agarwood aged over twenty years, infused with velvet Damascus rose and golden saffron threads.',
     image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1920&q=90',
-    ctaText: 'EXPLORE THE OUD LINE',
-    ctaLink: '/shop?family=Oud',
+    ctaText: 'EXPLORE OUD ROYALE',
+    ctaLink: '/product/oud-royale',
     active: true,
   },
   {

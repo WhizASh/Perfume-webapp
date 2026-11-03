@@ -22,13 +22,13 @@ export default function Navbar({ count, onCartOpen }) {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="border-b border-[#D4AF37]/15 bg-[#0F0F0F] px-4 py-2 text-center text-[10.5px] font-medium tracking-[0.22em] text-[#E5C378]">
+      {/* <div className="border-b border-[#D4AF37]/15 bg-[#0F0F0F] px-4 py-2 text-center text-[10.5px] font-medium tracking-[0.22em] text-[#E5C378]">
         <span className="inline-flex items-center gap-1.5">
           <Sparkles size={11} className="text-[#D4AF37]" />
           COMPLIMENTARY ROYAL SHIPPING ON ORDERS OVER ₹2,999 · 100% AUTHENTIC LUXURY
           <Sparkles size={11} className="text-[#D4AF37]" />
         </span>
-      </div>
+      </div> */}
 
       {/* Main Navigation Header */}
       <header className="sticky top-0 z-40 border-b border-[#D4AF37]/20 bg-[#0A0A0A]/95 backdrop-blur-md">
@@ -43,12 +43,19 @@ export default function Navbar({ count, onCartOpen }) {
           </button>
 
           {/* Brand Logo */}
-          <Link to="/" className="text-center group">
-            <div className="font-editorial text-2xl font-bold tracking-[0.16em] text-[#F5F5F7] group-hover:text-[#D4AF37] md:text-3xl transition-colors">
-              I.K.K PERFUME
-            </div>
-            <div className="text-[8.5px] tracking-[0.35em] text-[#D4AF37] uppercase font-semibold">
-              HAUTE PARFUMERIE & ATTARS
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <img
+              src="/logo.png"
+              alt="I.K.K Perfume Logo"
+              className="h-9 sm:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+            />
+            <div className="flex flex-col text-left">
+              <span className="font-editorial text-xl sm:text-2xl md:text-3xl font-bold tracking-[0.14em] text-[#F5F5F7] group-hover:text-[#D4AF37] transition-colors leading-tight">
+                I.K.K PERFUME
+              </span>
+              <span className="text-[7.5px] sm:text-[8.5px] tracking-[0.32em] text-[#D4AF37] uppercase font-semibold">
+                HAUTE PARFUMERIE & BOOKS
+              </span>
             </div>
           </Link>
 

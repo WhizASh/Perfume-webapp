@@ -113,13 +113,28 @@ async function seed() {
     console.log(`  ✓ [${prod.family.toUpperCase()}] ${prod.name} (${id}) — MRP: ₹${prod.mrp} | Selling: ₹${prod.price}`);
   }
 
-  // 5. Verify final collections
+  // 5. Seed initial carousel slides
+  console.log(`\nSeeding ${initialSlides.length} carousel slides:`);
+  for (const slide of initialSlides) {
+    const { id, ...data } = slide;
+    await setDoc(doc(db, 'carousel', id), {
+      id,
+      ...data,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+    console.log(`  ✓ Carousel Slide: ${slide.title} → Redirects to: ${slide.ctaLink}`);
+  }
+
+  // 6. Verify final collections
   const finalCats = await getDocs(collection(db, 'categories'));
   console.log(`\nVerification: Firestore now has ${finalCats.size} categories:`);
   finalCats.forEach((d) => console.log(`   - ${d.id}: ${d.data().name}`));
 
   const finalProds = await getDocs(collection(db, 'products'));
   console.log(`Verification: Firestore now has ${finalProds.size} products.`);
+
+  const finalSlides = await getDocs(collection(db, 'carousel'));
+  console.log(`Verification: Firestore now has ${finalSlides.size} carousel slides.`);
 
   console.log('\n--- Complete! Only the 5 requested categories exist in Firestore. ---');
   process.exit(0);

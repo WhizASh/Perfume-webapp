@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useCarousel } from '../context/CarouselContext';
 import { initialSlides } from '../data/carousel';
 
 export default function HeroCarousel() {
+  const navigate = useNavigate();
   const { slides: contextSlides } = useCarousel();
   const slides = (contextSlides && contextSlides.length > 0) ? contextSlides : initialSlides;
   const activeSlides = slides.filter((s) => s.active !== false);
@@ -28,15 +29,18 @@ export default function HeroCarousel() {
     };
   }, [isHovered, displaySlides.length, currentIndex]);
 
-  const goToNext = () => {
+  const goToNext = (e) => {
+    if (e) e.stopPropagation();
     setCurrentIndex((prev) => (prev + 1) % displaySlides.length);
   };
 
-  const goToPrev = () => {
+  const goToPrev = (e) => {
+    if (e) e.stopPropagation();
     setCurrentIndex((prev) => (prev - 1 + displaySlides.length) % displaySlides.length);
   };
 
   const currentSlide = displaySlides[currentIndex] || displaySlides[0];
+  const targetLink = currentSlide?.ctaLink || '/shop';
   const hasTextContent = Boolean(
     currentSlide?.title ||
     currentSlide?.subtitle ||
@@ -44,8 +48,21 @@ export default function HeroCarousel() {
     currentSlide?.description
   );
 
+  // Handle banner-wide click redirect to product or offer
+  const handleBannerClick = (e) => {
+    // If the click originated from an explicit link or button, allow that specific action
+    if (e.target.closest('button, a, input')) return;
+
+    if (targetLink.startsWith('http://') || targetLink.startsWith('https://')) {
+      window.open(targetLink, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(targetLink);
+    }
+  };
+
   return (
     <section
+      id="hero"
       aria-label="Hero Carousel"
       className="relative min-h-[460px] sm:min-h-[540px] md:min-h-[620px] lg:min-h-[680px] w-full overflow-hidden bg-[#0A0A0A]"
       onMouseEnter={() => setIsHovered(true)}
@@ -58,7 +75,9 @@ export default function HeroCarousel() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.45, ease: 'easeInOut' }}
-          className="absolute inset-0"
+          onClick={handleBannerClick}
+          className={`absolute inset-0 select-none ${targetLink ? 'cursor-pointer' : ''}`}
+          title={targetLink ? `Click banner to view: ${targetLink}` : undefined}
         >
           {/* Background / Hero Banner Image - 100% Fully Visible with No Dark Overlays / Opacity */}
           <img
@@ -66,15 +85,6 @@ export default function HeroCarousel() {
             alt={currentSlide.title || 'Hero Banner'}
             className="h-full w-full object-cover object-center"
           />
-
-          {/* Direct Banner Link for pure graphical banners */}
-          {!hasTextContent && currentSlide.ctaLink && (
-            <Link
-              to={currentSlide.ctaLink}
-              className="absolute inset-0 z-10 block"
-              aria-label={currentSlide.title || 'Promotional Banner'}
-            />
-          )}
 
           {/* Text Content Overlay - High-contrast text without dimming the carousel image */}
           {hasTextContent && (
@@ -114,7 +124,8 @@ export default function HeroCarousel() {
                 {/* CTA Action Buttons */}
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link
-                    to={currentSlide.ctaLink || '/shop'}
+                    to={targetLink}
+                    onClick={(e) => e.stopPropagation()}
                     className="group relative inline-flex items-center justify-center overflow-hidden border border-[#D4AF37] bg-[#D4AF37] px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-[#0A0A0A] shadow-[0_4px_20px_rgba(0,0,0,0.8)] transition-all hover:bg-[#E5C378] hover:border-[#E5C378]"
                   >
                     <span>{currentSlide.ctaText || 'DISCOVER SCENTS'}</span>
@@ -123,6 +134,7 @@ export default function HeroCarousel() {
 
                   <Link
                     to="/shop"
+                    onClick={(e) => e.stopPropagation()}
                     className="inline-flex items-center justify-center border border-white/40 bg-black/85 px-7 py-3.5 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm transition-all hover:border-[#D4AF37] hover:text-[#D4AF37]"
                   >
                     VIEW ALL CATALOG
@@ -161,7 +173,10 @@ export default function HeroCarousel() {
           {displaySlides.map((slide, idx) => (
             <button
               key={slide.id || idx}
-              onClick={() => setCurrentIndex(idx)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentIndex(idx);
+              }}
               aria-label={`Go to slide ${idx + 1}`}
               className={`h-2 transition-all duration-300 rounded-full ${
                 currentIndex === idx

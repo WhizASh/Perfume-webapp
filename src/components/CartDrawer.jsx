@@ -81,10 +81,15 @@ export default function CartDrawer({
         {/* Order Completion Notice */}
         {orderComplete ? (
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-            <div className="grid size-14 place-items-center rounded-full border border-[#D4AF37] bg-[#1A1A1A] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-              <Check size={28} />
+            <img
+              src="/logo.png"
+              alt="I.K.K Perfume"
+              className="h-16 w-auto object-contain mb-3"
+            />
+            <div className="grid size-12 place-items-center rounded-full border border-[#D4AF37] bg-[#1A1A1A] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+              <Check size={24} />
             </div>
-            <h3 className="mt-4 font-editorial text-3xl text-[#F5F5F7]">
+            <h3 className="mt-3 font-editorial text-3xl text-[#F5F5F7]">
               Order Transmitted!
             </h3>
             <p className="mt-2 text-xs text-zinc-400">

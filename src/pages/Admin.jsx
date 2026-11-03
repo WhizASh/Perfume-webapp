@@ -389,10 +389,12 @@ export default function Admin() {
     return (
       <main className="mx-auto flex min-h-[75vh] max-w-md flex-col justify-center px-6 py-16 text-[#F5F5F7]">
         <div className="border border-[#D4AF37]/30 bg-[#121212] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-          <div className="text-center">
-            <div className="mx-auto mb-4 grid size-13 place-items-center rounded-full border border-[#D4AF37] bg-[#1C1A14] text-[#D4AF37]">
-              <Lock size={22} />
-            </div>
+          <div className="text-center flex flex-col items-center">
+            <img
+              src="/logo.png"
+              alt="I.K.K Perfume Official Logo"
+              className="h-16 w-auto object-contain mb-3"
+            />
             <h1 className="font-editorial text-3xl font-bold tracking-wider text-[#F5F5F7]">
               Royal Admin Portal
             </h1>
@@ -477,18 +479,25 @@ export default function Admin() {
     <main className="mx-auto max-w-7xl px-6 py-10 md:px-8 text-[#F5F5F7]">
       {/* Top Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#D4AF37]/20 pb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-editorial text-4xl text-[#F5F5F7]">
-              Boutique Control Hub
-            </h1>
-            <span className="rounded border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#E5C378]">
-              AUTHENTICATED
-            </span>
+        <div className="flex items-center gap-4">
+          {/* <img
+            src="/logo.png"
+            alt="I.K.K Perfume"
+            className="h-12 w-auto object-contain shrink-0"
+          /> */}
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="font-editorial text-4xl text-[#F5F5F7]">
+                Boutique Control Hub
+              </h1>
+              <span className="rounded border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#E5C378]">
+                AUTHENTICATED
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-zinc-400">
+              Active session: <strong className="text-white">{adminUser?.email}</strong>
+            </p>
           </div>
-          <p className="mt-1 text-xs text-zinc-400">
-            Active session: <strong className="text-white">{adminUser?.email}</strong>
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -810,12 +819,21 @@ export default function Admin() {
                     </p>
                   )}
 
-                  <div className="flex items-center gap-3 pt-1 text-[11px] text-zinc-400">
-                    <span>
-                      CTA: <strong className="text-white">{s.ctaText || 'DISCOVER'}</strong>
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1.5 text-[11px] text-zinc-400">
+                    <span className="flex items-center gap-1 font-semibold text-zinc-300">
+                      <ExternalLink size={11} className="text-[#D4AF37]" />
+                      Banner Click Destination:
                     </span>
-                    <span>→</span>
-                    <span className="font-mono text-[#D4AF37]">{s.ctaLink || '/shop'}</span>
+                    <a
+                      href={s.ctaLink || '/shop'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[#E5C378] underline hover:text-white transition-colors inline-flex items-center gap-1 bg-black/60 px-2 py-0.5 border border-[#D4AF37]/30"
+                    >
+                      <span>{s.ctaLink || '/shop'}</span>
+                      <ExternalLink size={10} />
+                    </a>
+                    <span className="text-zinc-500">· Button: "{s.ctaText || 'DISCOVER'}"</span>
                   </div>
                 </div>
 
@@ -1448,33 +1466,150 @@ export default function Admin() {
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block font-bold tracking-wider text-[#D4AF37] uppercase text-[10px]">
-                    BUTTON CTA TEXT
+              {/* BANNER REDIRECT LINK & PRESET SELECTOR */}
+              <div className="border border-[#D4AF37]/35 bg-[#141414] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold tracking-wider text-[#D4AF37] uppercase text-[10px] flex items-center gap-1.5">
+                    <ExternalLink size={12} /> BANNER CLICK REDIRECT DESTINATION (WHERE BANNER LINKS TO)
                   </label>
-                  <input
-                    value={carouselForm.ctaText}
-                    onChange={(e) =>
-                      setCarouselForm({ ...carouselForm, ctaText: e.target.value })
-                    }
-                    placeholder="e.g. EXPLORE OUDS"
-                    className="mt-1 w-full border border-zinc-700 bg-[#0A0A0A] p-2.5 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
+                  {carouselForm.ctaLink && (
+                    <a
+                      href={carouselForm.ctaLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-semibold text-[#E5C378] hover:underline flex items-center gap-1"
+                    >
+                      Test Link ↗
+                    </a>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block font-bold tracking-wider text-[#D4AF37] uppercase text-[10px]">
-                    TARGET LINK (URL OR PATH)
-                  </label>
-                  <input
-                    value={carouselForm.ctaLink}
-                    onChange={(e) =>
-                      setCarouselForm({ ...carouselForm, ctaLink: e.target.value })
-                    }
-                    placeholder="e.g. /shop?family=Oud"
-                    className="mt-1 w-full border border-zinc-700 bg-[#0A0A0A] p-2.5 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
+                <p className="text-[11px] text-zinc-400 font-light">
+                  When a customer clicks anywhere on this hero banner, they will be instantly redirected to this product, category, or promotional offer URL.
+                </p>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-zinc-300 uppercase mb-1">
+                      REDIRECT URL OR PATH
+                    </label>
+                    <input
+                      required
+                      value={carouselForm.ctaLink}
+                      onChange={(e) =>
+                        setCarouselForm({ ...carouselForm, ctaLink: e.target.value })
+                      }
+                      placeholder="e.g. /product/oud-royale or /shop?family=Perfume"
+                      className="w-full border border-zinc-700 bg-[#0A0A0A] p-2.5 text-white font-mono text-xs focus:border-[#D4AF37] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-zinc-300 uppercase mb-1">
+                      OPTIONAL BUTTON CTA TEXT
+                    </label>
+                    <input
+                      value={carouselForm.ctaText}
+                      onChange={(e) =>
+                        setCarouselForm({ ...carouselForm, ctaText: e.target.value })
+                      }
+                      placeholder="e.g. EXPLORE THIS OFFER"
+                      className="w-full border border-zinc-700 bg-[#0A0A0A] p-2.5 text-white text-xs focus:border-[#D4AF37] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Destination Selectors */}
+                <div className="space-y-2 pt-2 border-t border-zinc-800">
+                  <p className="text-[10px] font-semibold text-[#D4AF37] uppercase tracking-wider">
+                    Quick Select Destination:
+                  </p>
+
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {/* 1. Specific Product Dropdown */}
+                    <div>
+                      <span className="text-[10px] text-zinc-400 block mb-1">Redirect to Specific Product:</span>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const selectedProd = products.find((p) => p.id === e.target.value);
+                            setCarouselForm({
+                              ...carouselForm,
+                              ctaLink: `/product/${e.target.value}`,
+                              ctaText: selectedProd ? `SHOP ${selectedProd.name.toUpperCase()}` : carouselForm.ctaText,
+                            });
+                          }
+                        }}
+                        className="w-full border border-zinc-700 bg-[#0A0A0A] p-2 text-xs text-white focus:border-[#D4AF37] focus:outline-none"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>-- Select a Product --</option>
+                        {products.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.family}) — ₹{p.sellingPrice || p.price}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* 2. Store Category Dropdown */}
+                    <div>
+                      <span className="text-[10px] text-zinc-400 block mb-1">Redirect to Store Category:</span>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setCarouselForm({
+                              ...carouselForm,
+                              ctaLink: `/shop?family=${encodeURIComponent(e.target.value)}`,
+                              ctaText: `EXPLORE ${e.target.value.toUpperCase()}`,
+                            });
+                          }
+                        }}
+                        className="w-full border border-zinc-700 bg-[#0A0A0A] p-2 text-xs text-white focus:border-[#D4AF37] focus:outline-none"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>-- Select a Category --</option>
+                        {categories.map((c) => (
+                          <option key={c.id || c.name} value={c.name}>
+                            {c.name.charAt(0).toUpperCase() + c.name.slice(1)} Collection
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] text-zinc-500 mr-1">Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => setCarouselForm({ ...carouselForm, ctaLink: '/shop', ctaText: 'VIEW ALL CATALOG' })}
+                      className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-300 hover:bg-[#D4AF37] hover:text-black transition-colors"
+                    >
+                      All Shop (/shop)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCarouselForm({ ...carouselForm, ctaLink: '/#bestsellers', ctaText: 'VIEW BESTSELLERS' })}
+                      className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-300 hover:bg-[#D4AF37] hover:text-black transition-colors"
+                    >
+                      Bestsellers (/#bestsellers)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCarouselForm({ ...carouselForm, ctaLink: '/#collections', ctaText: 'EXPLORE COLLECTIONS' })}
+                      className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-300 hover:bg-[#D4AF37] hover:text-black transition-colors"
+                    >
+                      Collections (/#collections)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCarouselForm({ ...carouselForm, ctaLink: '/#story', ctaText: 'OUR STORY' })}
+                      className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-300 hover:bg-[#D4AF37] hover:text-black transition-colors"
+                    >
+                      Our Story (/#story)
+                    </button>
+                  </div>
                 </div>
               </div>
 

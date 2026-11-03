@@ -19,7 +19,7 @@ export default function Home({ onAddToCart }) {
       <HeroCarousel />
 
       {/* 2. Fragrance Families / Curated Categories */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-14 md:py-18">
+      <section id="collections" className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-14 md:py-18">
         <div className="mb-8 md:mb-10 text-center">
           <div className="inline-flex items-center gap-2 mb-2">
             <Sparkles size={14} className="text-[#D4AF37]" />
@@ -78,7 +78,7 @@ export default function Home({ onAddToCart }) {
       </section>
 
       {/* 3. Bestsellers Section */}
-      <section className="border-y border-[#D4AF37]/15 bg-[#0F0F0F] py-24">
+      <section id="bestsellers" className="border-y border-[#D4AF37]/15 bg-[#0F0F0F] py-24">
         <div className="mx-auto max-w-7xl px-6 md:px-8">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-5 border-b border-[#D4AF37]/15 pb-6">
             <div>
@@ -122,6 +122,12 @@ export default function Home({ onAddToCart }) {
         </div>
 
         <div className="flex flex-col justify-center px-8 py-20 sm:px-16 lg:px-20">
+          <img
+            src="/logo.png"
+            alt="I.K.K Perfume Official Emblem"
+            className="h-16 w-auto object-contain self-start mb-4"
+          />
+
           <p className="text-[11px] font-semibold tracking-[0.3em] text-[#D4AF37] uppercase">
             OUR PHILOSOPHY & CRAFT
           </p>
@@ -150,7 +156,7 @@ export default function Home({ onAddToCart }) {
       </section>
 
       {/* 5. Call to Action Section */}
-      <section className="relative overflow-hidden bg-radial from-[#1A1813] via-[#0E0E0E] to-[#0A0A0A] px-6 py-24 text-center">
+      <section id="advisory" className="relative overflow-hidden bg-radial from-[#1A1813] via-[#0E0E0E] to-[#0A0A0A] px-6 py-24 text-center">
         <div className="relative z-10 mx-auto max-w-2xl">
           <p className="text-[11px] font-semibold tracking-[0.3em] text-[#D4AF37] uppercase">
             BESPOKE SCENT ADVISORY
