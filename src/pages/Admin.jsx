@@ -59,12 +59,16 @@ export default function Admin() {
     family: 'Perfume',
     size: '50 ml',
     notes: '',
-    badge: '',
     description: '',
-    image: '',
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
+  const [additionalPreviews, setAdditionalPreviews] = useState([]);
+  const [existingAdditionalImages, setExistingAdditionalImages] = useState([]);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreview, setVideoPreview] = useState('');
+  const [existingVideo, setExistingVideo] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [formSuccess, setFormSuccess] = useState('');
   const [formError, setFormError] = useState('');
@@ -143,6 +147,38 @@ export default function Admin() {
     }
   };
 
+  const handleAdditionalImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newPreviews = files.map((f) => URL.createObjectURL(f));
+      setAdditionalImageFiles((prev) => [...prev, ...files]);
+      setAdditionalPreviews((prev) => [...prev, ...newPreviews]);
+    }
+  };
+
+  const handleRemoveNewAdditionalImage = (index) => {
+    setAdditionalImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setAdditionalPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingAdditionalImage = (index) => {
+    setExistingAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleVideoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      setVideoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null);
+    setVideoPreview('');
+    setExistingVideo('');
+  };
+
   const handleCarouselImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -161,12 +197,16 @@ export default function Admin() {
       family: categories[0]?.name || 'Perfume',
       size: '50 ml',
       notes: '',
-      badge: '',
       description: '',
-      image: '',
     });
     setImageFile(null);
     setImagePreview('');
+    setAdditionalImageFiles([]);
+    setAdditionalPreviews([]);
+    setExistingAdditionalImages([]);
+    setVideoFile(null);
+    setVideoPreview('');
+    setExistingVideo('');
     setFormError('');
     setFormSuccess('');
     setShowAddModal(true);
@@ -174,6 +214,8 @@ export default function Admin() {
 
   const openEditProductModal = (product) => {
     setEditingProductId(product.id);
+    const existingExtras = (product.images || []).filter((img) => img !== product.image);
+
     setProductForm({
       name: product.name || '',
       mrp: product.mrp !== undefined && product.mrp !== null ? String(product.mrp) : '',
@@ -182,12 +224,16 @@ export default function Admin() {
       family: product.family || categories[0]?.name || 'Perfume',
       size: product.size || '50 ml',
       notes: product.notes || '',
-      badge: product.badge || '',
       description: product.description || '',
-      image: product.image || '',
     });
     setImageFile(null);
     setImagePreview(product.image || '');
+    setAdditionalImageFiles([]);
+    setAdditionalPreviews([]);
+    setExistingAdditionalImages(existingExtras);
+    setVideoFile(null);
+    setVideoPreview(product.video || '');
+    setExistingVideo(product.video || '');
     setFormError('');
     setFormSuccess('');
     setShowAddModal(true);
@@ -204,17 +250,26 @@ export default function Admin() {
         throw new Error('Please fill in product name and selling price.');
       }
 
+      if (!imageFile && !imagePreview) {
+        throw new Error('Primary cover photo is required. (Additional photos and video are optional).');
+      }
+
       await addProduct(
         {
           ...productForm,
           id: editingProductId || undefined,
+          image: imagePreview,
+          images: existingAdditionalImages,
+          video: existingVideo,
         },
-        imageFile
+        imageFile,
+        additionalImageFiles,
+        videoFile
       );
       setFormSuccess(
         editingProductId
-          ? 'Product & pricing updated successfully!'
-          : 'Product saved successfully to catalog!'
+          ? 'Product & media updated successfully!'
+          : 'Product & media saved successfully to catalog!'
       );
 
       setTimeout(() => {
@@ -1167,20 +1222,6 @@ export default function Admin() {
 
               <div>
                 <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px]">
-                  BADGE (OPTIONAL)
-                </label>
-                <input
-                  value={productForm.badge}
-                  onChange={(e) =>
-                    setProductForm({ ...productForm, badge: e.target.value })
-                  }
-                  placeholder="Bestseller / Royal Reserve / Limited"
-                  className="mt-1 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-2.5 text-[#141311] focus:border-[#C59B27] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px]">
                   DESCRIPTION
                 </label>
                 <textarea
@@ -1197,11 +1238,42 @@ export default function Admin() {
                 />
               </div>
 
-              {/* IMAGE UPLOAD */}
-              <div className="border border-dashed border-[#C59B27]/40 p-4 bg-[#FAF7F2]">
-                <label className="font-kufi block font-bold text-[#996515] uppercase text-[10px]">
-                  PRODUCT PHOTO
-                </label>
+              {/* MEDIA REQUIREMENTS PROMPT */}
+              <div className="flex items-start gap-2.5 rounded border border-[#C59B27]/40 bg-[#FAF7F2] p-3 text-xs text-[#57524A] shadow-xs">
+                <Sparkles size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-kufi text-[11px] font-bold text-[#0D0C0A] uppercase tracking-wider">
+                    Media Upload Guidelines
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-[#57524A]">
+                    <span className="font-bold text-[#996515]">Primary Cover Photo is REQUIRED</span> for store listing. <span className="font-semibold text-[#141311]">Additional photos</span> and <span className="font-semibold text-[#141311]">Showcase Video</span> are <span className="italic text-[#78716C]">optional</span>, visible when customers open the product details page.
+                  </p>
+                </div>
+              </div>
+
+              {/* 1. PRIMARY COVER PHOTO (DIRECT UPLOAD ONLY - REQUIRED) */}
+              <div className="border-2 border-dashed border-[#C59B27]/60 p-4 bg-[#FAF7F2] rounded">
+                <div className="flex items-center justify-between">
+                  <label className="font-kufi flex items-center gap-1.5 font-bold text-[#996515] uppercase text-[10px]">
+                    <span>PRIMARY COVER PHOTO</span>
+                    <span className="rounded bg-red-100 border border-red-300 px-1.5 py-0.2 text-[9px] font-black text-red-700">
+                      REQUIRED
+                    </span>
+                  </label>
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview('');
+                      }}
+                      className="text-[10px] text-red-600 hover:underline font-semibold"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
                 <input
                   type="file"
                   accept="image/*"
@@ -1213,26 +1285,140 @@ export default function Admin() {
                   <div className="mt-3 flex items-center gap-3">
                     <img
                       src={imagePreview}
-                      alt="Preview"
-                      className="size-16 object-cover border border-[#C59B27]/30"
+                      alt="Primary Cover Preview"
+                      className="size-16 object-cover border-2 border-[#D4AF37] shadow-sm rounded"
                     />
-                    <span className="text-[11px] text-[#996515] font-semibold">
-                      Photo ready for upload
-                    </span>
+                    <div>
+                      <p className="text-[11px] text-[#996515] font-semibold">
+                        {imageFile ? 'New photo ready for upload' : 'Current cover photo'}
+                      </p>
+                      <p className="text-[10px] text-[#78716C]">
+                        {imageFile ? imageFile.name : 'Active in fragrance catalog'}
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="mt-2 text-[11px] text-[#78716C]">
-                    Or specify an existing image URL:
-                    <input
-                      type="url"
-                      value={productForm.image}
-                      onChange={(e) =>
-                        setProductForm({ ...productForm, image: e.target.value })
-                      }
-                      placeholder="https://images.unsplash.com/..."
-                      className="mt-1 w-full border border-[#D9C8A9] bg-white p-2 text-[#141311] focus:border-[#C59B27] focus:outline-none"
-                    />
+                  <p className="mt-2 text-[11px] text-amber-900/80 font-medium">
+                    ⚠️ A primary photo is required. Please choose an image file (JPG, PNG, WebP) directly from your device.
+                  </p>
+                )}
+              </div>
+
+              {/* 2. ADDITIONAL PHOTOS (DIRECT MULTI-FILE UPLOAD ONLY - OPTIONAL) */}
+              <div className="border border-dashed border-[#C59B27]/50 p-4 bg-[#FAF7F2] rounded">
+                <div className="flex items-center justify-between">
+                  <label className="font-kufi flex items-center gap-1.5 font-bold text-[#996515] uppercase text-[10px]">
+                    <span>ADDITIONAL GALLERY PHOTOS</span>
+                    <span className="rounded bg-stone-200 border border-stone-300 px-1.5 py-0.2 text-[9px] font-bold text-stone-600">
+                      OPTIONAL
+                    </span>
+                  </label>
+                </div>
+                <p className="text-[10px] text-[#78716C] mt-0.5">
+                  Optional. Select one or more photos from your device to showcase bottle details and alternate angles.
+                </p>
+
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleAdditionalImagesChange}
+                  className="mt-2 w-full text-xs text-[#57524A] file:mr-3 file:border file:border-[#C59B27]/40 file:bg-white file:px-3 file:py-1.5 file:text-xs file:text-[#996515] file:cursor-pointer shadow-xs"
+                />
+
+                {/* Previews of existing & newly added additional photos */}
+                {(existingAdditionalImages.length > 0 || additionalPreviews.length > 0) && (
+                  <div className="mt-3">
+                    <p className="text-[10px] font-kufi font-bold text-[#9E781E] uppercase tracking-wider mb-1.5">
+                      Selected Photos ({existingAdditionalImages.length + additionalPreviews.length})
+                    </p>
+                    <div className="flex flex-wrap gap-2.5">
+                      {/* Existing Photos */}
+                      {existingAdditionalImages.map((url, idx) => (
+                        <div key={`existing-${idx}`} className="relative size-16 group rounded overflow-hidden border border-[#D4AF37]/60">
+                          <img src={url} alt={`Existing photo ${idx + 1}`} className="size-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExistingAdditionalImage(idx)}
+                            className="absolute top-0.5 right-0.5 bg-black/80 text-white rounded-full size-4 flex items-center justify-center text-[10px] hover:bg-red-600 transition-colors"
+                            title="Remove photo"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Newly selected photo files */}
+                      {additionalPreviews.map((preview, idx) => (
+                        <div key={`new-${idx}`} className="relative size-16 group rounded overflow-hidden border-2 border-emerald-600">
+                          <img src={preview} alt={`New upload ${idx + 1}`} className="size-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-emerald-700/80 text-[8px] text-white text-center font-bold">
+                            NEW
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveNewAdditionalImage(idx)}
+                            className="absolute top-0.5 right-0.5 bg-black/80 text-white rounded-full size-4 flex items-center justify-center text-[10px] hover:bg-red-600 transition-colors"
+                            title="Remove photo"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* 3. PRODUCT SHOWCASE VIDEO (DIRECT FILE UPLOAD ONLY - OPTIONAL) */}
+              <div className="border border-dashed border-[#C59B27]/50 p-4 bg-[#FAF7F2] rounded">
+                <div className="flex items-center justify-between">
+                  <label className="font-kufi flex items-center gap-1.5 font-bold text-[#996515] uppercase text-[10px]">
+                    <span>PRODUCT SHOWCASE VIDEO</span>
+                    <span className="rounded bg-stone-200 border border-stone-300 px-1.5 py-0.2 text-[9px] font-bold text-stone-600">
+                      OPTIONAL
+                    </span>
+                  </label>
+                  {(videoPreview || videoFile) && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveVideo}
+                      className="text-[10px] text-red-600 hover:underline font-semibold"
+                    >
+                      Remove Video
+                    </button>
+                  )}
+                </div>
+                <p className="text-[10px] text-[#78716C] mt-0.5">
+                  Optional. Upload an MP4, WebM, or MOV video clip showcasing this creation.
+                </p>
+
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoChange}
+                  className="mt-2 w-full text-xs text-[#57524A] file:mr-3 file:border file:border-[#C59B27]/40 file:bg-white file:px-3 file:py-1.5 file:text-xs file:text-[#996515] file:cursor-pointer shadow-xs"
+                />
+
+                {videoPreview ? (
+                  <div className="mt-3">
+                    <div className="relative max-w-xs overflow-hidden rounded border-2 border-[#D4AF37] bg-black">
+                      <video
+                        key={videoPreview}
+                        src={videoPreview}
+                        controls
+                        playsInline
+                        className="max-h-40 w-full object-contain"
+                      />
+                    </div>
+                    <p className="mt-1 text-[10px] text-[#9E781E] font-semibold">
+                      {videoFile ? `Video selected: ${videoFile.name}` : 'Current product showcase video'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-[11px] text-[#78716C]">
+                    No video uploaded (optional).
+                  </p>
                 )}
               </div>
 

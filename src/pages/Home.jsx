@@ -165,7 +165,7 @@ export default function Home({ onAddToCart }) {
       </section>
 
       {/* 3. Bestsellers Section */}
-      <section id="bestsellers" className="border-y-2 border-[#C59B27]/30 bg-[#EFE3C8] py-12 sm:py-16 md:py-24">
+      <section id="bestsellers" className="border-y-2 border-[#C59B27]/25 bg-[#F4EBD9] py-12 sm:py-16 md:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
           <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-2 border-[#C59B27]/25 pb-5 sm:pb-6">
             <div>
@@ -186,7 +186,7 @@ export default function Home({ onAddToCart }) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {products.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} />
             ))}

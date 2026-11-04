@@ -58,6 +58,62 @@ export async function uploadProductImage(file, customFileName) {
 }
 
 /**
+ * Uploads a product video file to Firebase Storage with automatic data-URL fallback.
+ * @param {File|Blob} file - Video file to upload
+ * @param {string} [customFileName] - Optional custom filename or identifier
+ * @returns {Promise<string>} Public download URL or Base64 data URL
+ */
+export async function uploadProductVideo(file, customFileName) {
+  if (!file) {
+    throw new Error('No file provided for video upload.');
+  }
+
+  if (isFirebaseConfigured && storage) {
+    try {
+      const timestamp = Date.now();
+      const sanitizedName = file.name
+        ? file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        : 'video.mp4';
+      const fileName = customFileName
+        ? `${customFileName}_${timestamp}_${sanitizedName}`
+        : `video_${timestamp}_${sanitizedName}`;
+
+      const storageRef = ref(storage, `products/videos/${fileName}`);
+
+      const snapshot = await uploadBytes(storageRef, file, {
+        contentType: file.type || 'video/mp4',
+      });
+
+      return await getDownloadURL(snapshot.ref);
+    } catch (err) {
+      console.warn(
+        'Firebase Storage product video upload failed (permissions or network). Falling back to local data URL:',
+        err.message
+      );
+    }
+  }
+
+  // Resilient fallback
+  return await fileToDataUrl(file);
+}
+
+/**
+ * Uploads multiple product image files in parallel.
+ * @param {FileList|File[]} files - List of image files
+ * @param {string} [baseSlug] - Identifier slug
+ * @returns {Promise<string[]>} Array of download URLs / Base64 data URLs
+ */
+export async function uploadMultipleProductImages(files, baseSlug = 'product') {
+  if (!files || files.length === 0) return [];
+  const fileArray = Array.from(files);
+  return Promise.all(
+    fileArray.map((file, idx) =>
+      uploadProductImage(file, `${baseSlug}_gallery_${idx + 1}`)
+    )
+  );
+}
+
+/**
  * Uploads a carousel slide image file to Firebase Storage with automatic data-URL fallback.
  * @param {File|Blob} file - Image file to upload
  * @param {string} [customFileName] - Optional custom filename or identifier

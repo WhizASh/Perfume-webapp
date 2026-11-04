@@ -1,4 +1,5 @@
 // Demo catalog categorized strictly under: Perfume, Attar, Bakhoor, Topi, Books
+// Enhanced with multiple high-resolution photos and video showcases for each fragrance item
 
 export const products = [
   // 1. PERFUME
@@ -12,9 +13,15 @@ export const products = [
     notes: 'Woody · Amber · Royal Saffron',
     family: 'Perfume',
     size: '50 ml',
-    badge: '',
+    badge: 'Bestseller',
     image:
-      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     description: 'A rich, majestic Eau de Parfum with warm golden amber and smoky Cambodian oud.',
   },
   {
@@ -27,9 +34,15 @@ export const products = [
     notes: 'Taif Rose · Velvet Musk · Vanilla',
     family: 'Perfume',
     size: '50 ml',
-    badge: '',
+    badge: 'Signature',
     image:
-      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
     description: 'A graceful French-oriental floral composition with a lingering, velvety finish.',
   },
   {
@@ -44,7 +57,13 @@ export const products = [
     size: '50 ml',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     description: 'A captivating, confident evening perfume crafted for commanding presence.',
   },
 
@@ -59,9 +78,15 @@ export const products = [
     notes: 'Aged Assam Agarwood · Smoky Woods · Sweet Resins',
     family: 'Attar',
     size: '12 ml (1 Tola)',
-    badge: '',
+    badge: 'Royal Reserve',
     image:
-      'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     description: 'Rare aged Indian agarwood oil extracted through traditional copper alembic hydro-distillation. Zero alcohol.',
   },
   {
@@ -76,7 +101,12 @@ export const products = [
     size: '12 ml (1 Tola)',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'A soothing, celestial attar oil blended with pure botanical and resinous extracts.',
   },
   {
@@ -91,7 +121,12 @@ export const products = [
     size: '12 ml (1 Tola)',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'Traditional copper-deg distilled wild green vetiver from North India with cooling earthy serenity.',
   },
 
@@ -106,9 +141,15 @@ export const products = [
     notes: 'Agarwood Chips · Frankincense · Amber Resin',
     family: 'Bakhoor',
     size: '70g Jar',
-    badge: '',
+    badge: 'Popular',
     image:
-      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     description: 'Slow-burning natural wood chips soaked in pure fragrant oils to scent spaces and garments.',
   },
   {
@@ -123,7 +164,12 @@ export const products = [
     size: '100g Tin',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'Hand-selected Cambodi wood chips drenched in fragrant oil blends for ceremonial and home gatherings.',
   },
 
@@ -140,7 +186,12 @@ export const products = [
     size: 'Standard 22"',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'A breathable, delicately hand-embroidered traditional prayer cap with regal metallic motif detailing.',
   },
   {
@@ -155,7 +206,12 @@ export const products = [
     size: 'Standard 22.5"',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'Exquisite Ottoman-inspired prayer topi fashioned from rich velvet with handcrafted silk embroidery.',
   },
 
@@ -172,7 +228,12 @@ export const products = [
     size: '320 Pages',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'An illuminating volume celebrating the sacred tradition, botanical history, and art of fine perfumery in Islamic culture.',
   },
   {
@@ -187,7 +248,12 @@ export const products = [
     size: '280 Pages',
     badge: '',
     image:
-      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=85',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=85',
+    images: [
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=85',
+    ],
+    video: '',
     description: 'A beautifully illustrated reference on the origins, grading, and traditions of Oud, Bakhoor, and botanical oils.',
   },
 ];

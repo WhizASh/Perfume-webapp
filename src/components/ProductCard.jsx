@@ -1,22 +1,31 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Tag } from 'lucide-react';
+import { ShoppingBag, Tag, Play } from 'lucide-react';
 import { getProductDiscount } from '../services/productsService';
 
 export default function ProductCard({ product, onAddToCart }) {
   const { hasDiscount, percent, mrp, selling } = getProductDiscount(product);
 
   return (
-    <article className="group relative flex flex-row sm:flex-col justify-between overflow-hidden border-2 border-[#C59B27]/40 bg-[#FAF6ED] p-2.5 sm:p-3.5 transition-all duration-300 hover:border-[#D4AF37] hover:shadow-[0_8px_30px_rgba(212,175,55,0.22)]">
-      {/* Product Image Container (Square thumbnail on mobile, 4:5 on desktop) */}
-      <div className="relative w-32 xs:w-36 sm:w-full shrink-0 overflow-hidden bg-[#EFE3C8]">
+    <article className="group relative flex flex-row items-stretch justify-between overflow-hidden border-2 border-[#C59B27]/40 bg-[#FAF6ED] p-2.5 sm:p-4 transition-all duration-300 hover:border-[#D4AF37] hover:shadow-[0_12px_36px_rgba(212,175,55,0.25)] hover:-translate-y-0.5">
+      {/* Product Image Container (Horizontal landscape card thumbnail) */}
+      <div className="relative w-32 xs:w-36 sm:w-44 md:w-48 lg:w-52 shrink-0 overflow-hidden bg-[#EFE3C8] aspect-[4/5] sm:aspect-square md:aspect-[4/5]">
         <Link to={'/product/' + product.id} className="block h-full">
           <img
             loading="lazy"
             src={product.image}
             alt={product.name}
-            className="aspect-square sm:aspect-[4/5] w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
           />
         </Link>
+
+        {/* Video badge indicator */}
+        {product.video && (
+          <div className="absolute right-2 top-2 z-10 pointer-events-none">
+            <span className="inline-flex items-center gap-1 rounded bg-[#0D0C0A]/85 backdrop-blur-xs border border-[#D4AF37]/60 px-1.5 py-0.5 text-[8.5px] font-kufi font-bold text-[#D4AF37] shadow-sm">
+              <Play size={8} className="fill-[#D4AF37]" /> VIDEO
+            </span>
+          </div>
+        )}
 
         {/* Discount Tag (Preserved Sale Tag) */}
         {hasDiscount && (
@@ -26,45 +35,38 @@ export default function ProductCard({ product, onAddToCart }) {
             </span>
           </div>
         )}
-
-        {/* Desktop Add to Bag Quick Button (Overlaid on image on sm screens and larger) */}
-        <button
-          onClick={() => onAddToCart(product)}
-          className="hidden sm:flex absolute bottom-2.5 left-2.5 right-2.5 items-center justify-center gap-2 border-2 border-[#D4AF37] bg-[#0D0C0A] py-2.5 text-[11px] font-kufi font-bold tracking-[0.16em] text-[#D4AF37] shadow-[0_4px_14px_rgba(0,0,0,0.35)] transition-all duration-300 hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black opacity-90 group-hover:opacity-100"
-        >
-          <ShoppingBag size={12} className="shrink-0" />
-          <span className="truncate">ADD TO BAG</span>
-        </button>
       </div>
 
-      {/* Details (Right column on mobile, bottom area on desktop) */}
-      <div className="flex flex-1 flex-col justify-between pl-3 sm:pl-0 sm:pt-3.5 pb-0.5 sm:pb-1 min-w-0">
-        <div className="space-y-0.5 sm:space-y-1">
-          <p className="font-kufi text-[8.5px] sm:text-[9.5px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#9E781E] font-bold">
+      {/* Details Area */}
+      <div className="flex flex-1 flex-col justify-between pl-3 sm:pl-5 min-w-0 py-0.5 sm:py-1">
+        <div className="space-y-1">
+          <p className="font-kufi text-[8.5px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#9E781E] font-bold">
             {product.concentration} · {product.size}
           </p>
 
           <Link to={'/product/' + product.id}>
-            <h3 className="font-rakkas text-xl sm:text-xl md:text-2xl font-normal text-[#0D0C0A] transition-colors group-hover:text-[#9E781E] leading-snug line-clamp-1">
+            <h3 className="font-rakkas text-xl sm:text-2xl lg:text-3xl font-normal text-[#0D0C0A] transition-colors group-hover:text-[#9E781E] leading-snug line-clamp-1">
               {product.name}
             </h3>
           </Link>
 
-          <p className="line-clamp-1 text-[11px] sm:text-xs text-[#4A433A] font-light">{product.notes}</p>
+          <p className="font-messiri line-clamp-1 sm:line-clamp-2 text-xs sm:text-sm text-[#4A433A] font-light mt-0.5">
+            {product.notes}
+          </p>
         </div>
 
-        {/* Bottom Section: Pricing & Mobile Add to Bag Button */}
-        <div className="pt-2 sm:pt-2">
+        {/* Bottom Section: Pricing & Add to Bag CTA */}
+        <div className="pt-2 sm:pt-3">
           {/* Pricing: Discounted Selling Price, Slashed MRP, and Sale Tag */}
-          <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
             {/* Selling Price */}
-            <span className="text-base sm:text-lg font-bold tracking-wide text-[#0D0C0A]">
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-[#0D0C0A]">
               ₹{selling.toLocaleString('en-IN')}
             </span>
 
             {/* Slashed MRP */}
             {hasDiscount && (
-              <span className="text-[11px] sm:text-xs text-[#6B6256] line-through decoration-[#8C8376]">
+              <span className="text-[11px] sm:text-sm text-[#6B6256] line-through decoration-[#8C8376]">
                 ₹{mrp.toLocaleString('en-IN')}
               </span>
             )}
@@ -77,12 +79,12 @@ export default function ProductCard({ product, onAddToCart }) {
             )}
           </div>
 
-          {/* Mobile-only Add to Bag Button (Easy thumb tap on mobile horizontal cards) */}
+          {/* Add to Bag Quick Button */}
           <button
             onClick={() => onAddToCart(product)}
-            className="sm:hidden mt-2.5 flex w-full items-center justify-center gap-1.5 border border-[#D4AF37] bg-[#0D0C0A] py-2 text-[10px] font-kufi font-bold tracking-wider text-[#D4AF37] shadow-sm active:bg-[#D4AF37] active:text-black transition-colors"
+            className="mt-2.5 sm:mt-3 flex w-full sm:w-fit items-center justify-center gap-2 border-2 border-[#D4AF37] bg-[#0D0C0A] px-4 sm:px-6 py-2 sm:py-2.5 text-[10.5px] sm:text-xs font-kufi font-bold tracking-[0.14em] sm:tracking-[0.18em] text-[#D4AF37] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black active:scale-98"
           >
-            <ShoppingBag size={11} className="shrink-0" />
+            <ShoppingBag size={13} className="shrink-0" />
             <span>ADD TO BAG</span>
           </button>
         </div>

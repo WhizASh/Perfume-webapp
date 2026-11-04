@@ -49,8 +49,8 @@ export function ProductProvider({ children }) {
     loadData();
   }, []);
 
-  const addProduct = async (productData, imageFile) => {
-    const saved = await createProduct(productData, imageFile);
+  const addProduct = async (productData, imageFile, additionalImageFiles, videoFile) => {
+    const saved = await createProduct(productData, imageFile, additionalImageFiles, videoFile);
     setProducts((prev) => {
       const idx = prev.findIndex((p) => p.id === saved.id);
       let next;
