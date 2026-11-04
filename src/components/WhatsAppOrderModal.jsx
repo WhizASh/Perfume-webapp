@@ -156,28 +156,41 @@ export default function WhatsAppOrderModal({
         </div>
 
         {/* Order Summary Strip */}
-        <div className="mt-4 rounded border border-[#C59B27]/30 bg-[#F4EBD9]/60 p-3 text-xs">
-          <div className="flex items-center justify-between font-medium">
-            <span className="flex items-center gap-1.5 text-[#57524A]">
-              <ShoppingBag size={14} className="text-[#996515]" />
-              {itemCount} {itemCount === 1 ? 'Item' : 'Items'} Selected:
+        <div className="mt-4 border border-[#C59B27]/30 bg-[#F4EBD9]/60 p-3 text-xs">
+          <div className="flex items-center justify-between font-medium gap-2">
+            <span className="flex items-center gap-1.5 text-[#57524A] truncate">
+              <ShoppingBag size={14} className="text-[#996515] shrink-0" />
+              {items.length === 1 ? (
+                <span className="truncate">
+                  <strong className="text-[#0D0C0A] font-bold">{items[0].name}</strong>{' '}
+                  <span className="text-[#996515]">({items[0].selectedVariant?.name || items[0].size || '50 ml'})</span>
+                  {items[0].quantity > 1 && ` × ${items[0].quantity}`}
+                </span>
+              ) : (
+                <span>{itemCount} {itemCount === 1 ? 'Item' : 'Items'} Selected</span>
+              )}
             </span>
-            <span className="font-editorial text-base font-bold text-[#0D0C0A]">
+            <span className="font-editorial text-base font-bold text-[#0D0C0A] shrink-0">
               Total: ₹{Number(subtotal).toLocaleString('en-IN')}
             </span>
           </div>
-          <div className="mt-2 max-h-24 overflow-y-auto space-y-1 divide-y divide-[#C59B27]/15 pt-1 text-[11px] text-[#57524A]">
-            {items.map((item, idx) => (
-              <div key={idx} className="flex justify-between pt-1">
-                <span className="truncate pr-2">
-                  • {item.name} <span className="text-[#996515]">({item.selectedVariant?.name || item.size || '50 ml'})</span> × {item.quantity}
-                </span>
-                <span className="font-semibold text-[#0D0C0A] shrink-0">
-                  ₹{((Number(item.price ?? item.sellingPrice) || 0) * (Number(item.quantity) || 1)).toLocaleString('en-IN')}
-                </span>
-              </div>
-            ))}
-          </div>
+
+          {/* Multi-item breakdown (only when more than 1 item in cart) */}
+          {items.length > 1 && (
+            <div className="mt-2.5 max-h-36 overflow-y-auto no-scrollbar space-y-1.5 border-t border-[#C59B27]/20 pt-2 text-[11px] text-[#57524A]">
+              {items.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between gap-2">
+                  <span className="truncate">
+                    {item.name}{' '}
+                    <span className="text-[#996515]">({item.selectedVariant?.name || item.size || '50 ml'})</span> × {item.quantity}
+                  </span>
+                  <span className="font-semibold text-[#0D0C0A] shrink-0">
+                    ₹{((Number(item.price ?? item.sellingPrice) || 0) * (Number(item.quantity) || 1)).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Customer Details Form */}

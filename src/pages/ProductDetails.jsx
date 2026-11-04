@@ -354,12 +354,12 @@ export default function ProductDetails({ onAddToCart }) {
             </p>
           )}
 
-          <p className="mt-4 sm:mt-6 max-w-md text-xs sm:text-sm leading-relaxed text-[#4A433A] font-light">
+          {/* <p className="mt-4 sm:mt-6 max-w-md text-xs sm:text-sm leading-relaxed text-[#4A433A] font-light">
             {product.description}
-          </p>
+          </p> */}
 
           {/* Guarantee Badges */}
-          <div className="my-5 sm:my-6 grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 border-y-2 border-[#C59B27]/30 py-3.5 sm:py-4 text-xs text-[#4A433A]">
+          {/* <div className="my-5 sm:my-6 grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 border-y-2 border-[#C59B27]/30 py-3.5 sm:py-4 text-xs text-[#4A433A]">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#D4AF37] shrink-0" />
               <span>100% Original Pure Concentrate</span>
@@ -368,11 +368,11 @@ export default function ProductDetails({ onAddToCart }) {
               <Truck size={16} className="text-[#D4AF37] shrink-0" />
               <span>Complimentary Shipping ₹2,999+</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Luxury Variant Selector (20ml, 50ml, 100ml, etc.) */}
           {variants.length > 0 && (
-            <div className="mb-5 sm:mb-6">
+            <div className="mb-5 mt-8 sm:mb-6">
               <div className="flex items-center justify-between mb-2.5">
                 <p className="font-kufi text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#9E781E]">
                   SELECT BOTTLE SIZE / VARIANT

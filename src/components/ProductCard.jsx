@@ -72,9 +72,9 @@ export default function ProductCard({ product, onAddToCart }) {
       {/* Details Area */}
       <div className="flex flex-1 flex-col justify-between pl-3 sm:pl-5 min-w-0 py-0.5 sm:py-1">
         <div className="space-y-1">
-          <p className="font-kufi text-[8.5px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#9E781E] font-bold">
+          {/* <p className="font-kufi text-[8.5px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#9E781E] font-bold">
             {product.concentration} · {variants.length > 1 ? `${variants.length} Sizes (${variants.map((v) => v.name).join(', ')})` : (defaultVariant ? defaultVariant.name : product.size)}
-          </p>
+          </p> */}
 
           <Link to={'/product/' + product.id}>
             <h3 className="font-rakkas text-xl sm:text-2xl lg:text-3xl font-normal text-[#0D0C0A] transition-colors group-hover:text-[#9E781E] leading-snug line-clamp-1">
