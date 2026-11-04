@@ -476,16 +476,16 @@ export default function Admin() {
 
   // 3. Authenticated View (Admin Dashboard)
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10 md:px-8 text-[#0D0C0A]">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:px-8 text-[#0D0C0A]">
       {/* Top Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#C59B27]/30 pb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#C59B27]/30 pb-5 sm:pb-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-rakkas text-4xl text-[#0D0C0A]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <h1 className="font-rakkas text-3xl sm:text-4xl text-[#0D0C0A]">
                 Boutique Control Hub
               </h1>
-              <span className="font-kufi rounded border border-[#D4AF37] bg-[#0D0C0A] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#D4AF37]">
+              <span className="font-kufi rounded border border-[#D4AF37] bg-[#0D0C0A] px-2 py-0.5 text-[9px] sm:text-[10px] font-bold tracking-wider text-[#D4AF37]">
                 AUTHENTICATED
               </span>
             </div>
@@ -495,7 +495,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 self-start sm:self-auto">
           <Link
             to="/"
             className="flex items-center gap-1.5 border-2 border-[#D4AF37] bg-[#0D0C0A] px-3.5 py-2 text-xs font-bold font-kufi text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xs"
@@ -504,18 +504,18 @@ export default function Admin() {
           </Link>
           <button
             onClick={logout}
-            className="flex items-center gap-1.5 border border-[#C59B27]/40 bg-[#FAF6ED] px-4 py-2 text-xs font-semibold text-[#4A433A] hover:border-red-500 hover:text-red-600 transition-all shadow-xs"
+            className="flex items-center gap-1.5 border border-[#C59B27]/40 bg-[#FAF6ED] px-3.5 sm:px-4 py-2 text-xs font-semibold text-[#4A433A] hover:border-red-500 hover:text-red-600 transition-all shadow-xs"
           >
             <LogOut size={13} /> LOG OUT
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mt-6 flex flex-wrap border-b border-[#C59B27]/20 gap-2">
+      {/* Tabs (Responsive Horizontal Scroll Track on Mobile) */}
+      <div className="mt-6 flex overflow-x-auto no-scrollbar border-b border-[#C59B27]/20 gap-1.5 sm:gap-2 pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-xs font-bold tracking-wider transition-all ${
+          className={`flex items-center gap-2 shrink-0 whitespace-nowrap border-b-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold tracking-wider transition-all ${
             activeTab === 'catalog'
               ? 'border-[#C59B27] text-[#141311] bg-[#C59B27]/15'
               : 'border-transparent text-[#57524A] hover:text-[#141311]'
@@ -526,7 +526,7 @@ export default function Admin() {
 
         <button
           onClick={() => setActiveTab('categories')}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-xs font-bold tracking-wider transition-all ${
+          className={`flex items-center gap-2 shrink-0 whitespace-nowrap border-b-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold tracking-wider transition-all ${
             activeTab === 'categories'
               ? 'border-[#C59B27] text-[#141311] bg-[#C59B27]/15'
               : 'border-transparent text-[#57524A] hover:text-[#141311]'
@@ -537,7 +537,7 @@ export default function Admin() {
 
         <button
           onClick={() => setActiveTab('carousel')}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-xs font-bold tracking-wider transition-all ${
+          className={`flex items-center gap-2 shrink-0 whitespace-nowrap border-b-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold tracking-wider transition-all ${
             activeTab === 'carousel'
               ? 'border-[#C59B27] text-[#141311] bg-[#C59B27]/15'
               : 'border-transparent text-[#57524A] hover:text-[#141311]'
@@ -548,7 +548,7 @@ export default function Admin() {
 
         <button
           onClick={() => setActiveTab('orders')}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-xs font-bold tracking-wider transition-all ${
+          className={`flex items-center gap-2 shrink-0 whitespace-nowrap border-b-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold tracking-wider transition-all ${
             activeTab === 'orders'
               ? 'border-[#C59B27] text-[#141311] bg-[#C59B27]/15'
               : 'border-transparent text-[#57524A] hover:text-[#141311]'
@@ -559,7 +559,7 @@ export default function Admin() {
 
         <button
           onClick={() => setActiveTab('config')}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-xs font-bold tracking-wider transition-all ${
+          className={`flex items-center gap-2 shrink-0 whitespace-nowrap border-b-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold tracking-wider transition-all ${
             activeTab === 'config'
               ? 'border-[#C59B27] text-[#141311] bg-[#C59B27]/15'
               : 'border-transparent text-[#57524A] hover:text-[#141311]'
