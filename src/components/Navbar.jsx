@@ -31,11 +31,11 @@ export default function Navbar({ count, onCartOpen }) {
       </div> */}
 
       {/* Main Navigation Header */}
-      <header className="sticky top-0 z-40 border-b border-[#D4AF37]/20 bg-[#0A0A0A]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
+      <header className="sticky top-0 z-40 border-b-2 border-[#D4AF37]/40 bg-[#0D0C0A]/95 backdrop-blur-md text-[#F4EBD9]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 md:px-8">
           {/* Mobile Menu Button */}
           <button
-            className="text-zinc-300 hover:text-[#D4AF37] md:hidden"
+            className="text-[#D4AF37] hover:text-white md:hidden"
             aria-label="Open menu"
             onClick={() => setMenu(!menu)}
           >
@@ -47,25 +47,25 @@ export default function Navbar({ count, onCartOpen }) {
             <img
               src="/logo.png"
               alt="I.K.K Perfume Logo"
-              className="h-9 sm:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+              className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
             />
             <div className="flex flex-col text-left">
-              <span className="font-editorial text-xl sm:text-2xl md:text-3xl font-bold tracking-[0.14em] text-[#F5F5F7] group-hover:text-[#D4AF37] transition-colors leading-tight">
+              <span className="font-rakkas text-2xl sm:text-3xl font-normal tracking-[0.05em] text-[#F4EBD9] group-hover:text-[#D4AF37] transition-colors leading-tight">
                 I.K.K PERFUME
               </span>
-              <span className="text-[7.5px] sm:text-[8.5px] tracking-[0.32em] text-[#D4AF37] uppercase font-semibold">
+              <span className="font-kufi text-[8px] sm:text-[9px] tracking-[0.32em] text-[#D4AF37] uppercase font-bold">
                 HAUTE PARFUMERIE & BOOKS
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden items-center gap-8 text-[11px] font-semibold tracking-[0.2em] text-zinc-300 md:flex">
+          <nav className="hidden items-center gap-8 text-[11px] font-semibold font-kufi tracking-[0.2em] text-[#E8DCC2] md:flex">
             <NavLink
               to="/shop"
               className={({ isActive }) =>
                 `transition-colors hover:text-[#D4AF37] ${
-                  isActive ? 'text-[#D4AF37] border-b border-[#D4AF37] pb-0.5' : ''
+                  isActive ? 'text-[#D4AF37] border-b-2 border-[#D4AF37] pb-0.5' : ''
                 }`
               }
             >
@@ -88,7 +88,7 @@ export default function Navbar({ count, onCartOpen }) {
           </nav>
 
           {/* Action Icons */}
-          <div className="flex items-center gap-5 text-zinc-300">
+          <div className="flex items-center gap-5 text-[#E8DCC2]">
             <button
               aria-label="Search fragrances"
               onClick={() => setSearch(!search)}
@@ -104,7 +104,7 @@ export default function Navbar({ count, onCartOpen }) {
             >
               <ShoppingBag size={20} />
               {count > 0 && (
-                <span className="absolute -right-2 -top-2 flex size-4.5 items-center justify-center rounded-full bg-[#D4AF37] text-[10px] font-bold text-black shadow-[0_0_8px_rgba(212,175,55,0.7)]">
+                <span className="absolute -right-2 -top-2 flex size-4.5 items-center justify-center rounded-full bg-[#D4AF37] text-[10px] font-black text-black shadow-[0_0_10px_rgba(212,175,55,0.9)]">
                   {count}
                 </span>
               )}
@@ -114,7 +114,7 @@ export default function Navbar({ count, onCartOpen }) {
 
         {/* Mobile Navigation Drawer */}
         {menu && (
-          <nav className="flex flex-col gap-4 border-t border-[#D4AF37]/20 bg-[#121212] px-6 py-6 text-xs uppercase tracking-[0.18em] text-zinc-200 md:hidden">
+          <nav className="flex flex-col gap-4 border-t-2 border-[#D4AF37]/40 bg-[#0D0C0A] px-6 py-6 text-xs uppercase font-kufi tracking-[0.2em] text-[#E8DCC2] md:hidden shadow-2xl">
             <Link
               onClick={() => setMenu(false)}
               to="/shop"
@@ -142,7 +142,7 @@ export default function Navbar({ count, onCartOpen }) {
             <Link
               onClick={() => setMenu(false)}
               to="/admin"
-              className="text-[#D4AF37] pt-2 border-t border-[#D4AF37]/20"
+              className="text-[#D4AF37] pt-2 border-t border-[#D4AF37]/30 font-bold"
             >
               Admin Dashboard ↗
             </Link>
@@ -152,7 +152,7 @@ export default function Navbar({ count, onCartOpen }) {
         {/* Expandable Search Input Dropdown */}
         {search && (
           <form
-            className="border-t border-[#D4AF37]/20 bg-[#121212] px-5 py-3 shadow-xl"
+            className="border-t-2 border-[#D4AF37]/40 bg-[#14120E] px-5 py-3.5 shadow-2xl"
             onSubmit={handleSearchSubmit}
           >
             <div className="mx-auto flex max-w-3xl items-center gap-3">
@@ -161,12 +161,12 @@ export default function Navbar({ count, onCartOpen }) {
                 autoFocus
                 name="q"
                 placeholder="Search scents, notes (e.g. Oud, Saffron, Rose)..."
-                className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
+                className="w-full bg-transparent text-sm text-[#F4EBD9] placeholder-zinc-500 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setSearch(false)}
-                className="text-xs text-zinc-400 hover:text-white"
+                className="text-xs text-zinc-400 hover:text-[#D4AF37]"
               >
                 ✕
               </button>

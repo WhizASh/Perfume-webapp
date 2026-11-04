@@ -43,16 +43,16 @@ export default function Shop({ onAddToCart }) {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-14 md:px-8 text-[#F5F5F7]">
+    <main className="mx-auto max-w-7xl px-6 py-14 md:px-8 text-[#0D0C0A]">
       {/* Header Banner */}
-      <div className="border-b border-[#D4AF37]/15 pb-8">
-        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.3em] text-[#D4AF37] uppercase">
-          <Sparkles size={13} /> THE COMPLETE ARCHIVE
+      <div className="border-b-2 border-[#C59B27]/30 pb-8">
+        <div className="inline-flex items-center gap-1.5 font-kufi text-[11px] font-bold tracking-[0.3em] text-[#9E781E] uppercase">
+          <Sparkles size={13} className="text-[#D4AF37]" /> THE COMPLETE ARCHIVE
         </div>
-        <h1 className="mt-2 font-editorial text-5xl sm:text-6xl md:text-7xl text-[#F5F5F7]">
+        <h1 className="mt-2 font-rakkas text-5xl sm:text-6xl md:text-7xl text-[#0D0C0A]">
           All Fragrances
         </h1>
-        <p className="mt-3 text-xs sm:text-sm text-zinc-400 font-light max-w-xl">
+        <p className="mt-3 text-xs sm:text-sm text-[#4A433A] font-light max-w-xl">
           Discover our full spectrum of fine eaux de parfum, pure extrait concentrates, and artisanal attars.
         </p>
       </div>
@@ -60,7 +60,7 @@ export default function Shop({ onAddToCart }) {
       <div className="mt-10 flex gap-10">
         {/* Desktop Sidebar Filters */}
         <aside className="hidden w-52 shrink-0 md:block">
-          <p className="mb-5 text-[11px] font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
+          <p className="font-kufi mb-5 text-[11px] font-bold tracking-[0.25em] text-[#9E781E] uppercase">
             FRAGRANCE FAMILY
           </p>
           <div className="flex flex-col items-start gap-3">
@@ -70,10 +70,10 @@ export default function Shop({ onAddToCart }) {
                 <button
                   key={f}
                   onClick={() => setFamily(f)}
-                  className={`text-xs uppercase tracking-wider transition-all duration-200 py-1 ${
+                  className={`text-xs uppercase font-kufi tracking-wider transition-all duration-200 py-1 ${
                     isSelected
-                      ? 'border-l-2 border-[#D4AF37] pl-3 font-bold text-[#E5C378]'
-                      : 'text-zinc-400 hover:text-white pl-0'
+                      ? 'border-l-4 border-[#D4AF37] pl-3 font-bold text-[#0D0C0A]'
+                      : 'text-[#4A433A] hover:text-[#9E781E] pl-0'
                   }`}
                 >
                   {f} {f === 'All' ? `(${products.length})` : ''}
@@ -85,27 +85,27 @@ export default function Shop({ onAddToCart }) {
 
         {/* Product Grid Area */}
         <div className="min-w-0 flex-1">
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-[#D4AF37]/15 pb-4">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#C59B27]/25 pb-4">
             <div className="flex items-center gap-3">
               <button
-                className="flex items-center gap-2 border border-[#D4AF37]/30 bg-[#161616] px-3.5 py-1.5 text-xs text-[#D4AF37] md:hidden"
+                className="flex items-center gap-2 border-2 border-[#C59B27]/40 bg-[#FAF6ED] px-3.5 py-1.5 text-xs font-kufi font-bold text-[#9E781E] md:hidden shadow-xs"
                 onClick={() => setFiltersOpen(true)}
               >
                 <SlidersHorizontal size={14} /> FILTER
               </button>
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-[#4A433A]">
                 {filtered.length} {filtered.length === 1 ? 'fragrance' : 'fragrances'}
                 {q ? ` matching “${q}”` : ''}
               </span>
             </div>
 
-            <label className="flex items-center gap-2 text-xs text-zinc-300">
+            <label className="flex items-center gap-2 text-xs text-[#4A433A]">
               SORT BY{' '}
               <select
                 aria-label="Sort products"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="border border-[#D4AF37]/30 bg-[#161616] px-3 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none"
+                className="border-2 border-[#C59B27]/40 bg-[#FAF6ED] px-3 py-1.5 text-xs text-[#0D0C0A] font-medium focus:border-[#D4AF37] focus:outline-none shadow-xs"
               >
                 <option value="featured">Featured Selection</option>
                 <option value="price-asc">Price: Low to High</option>
@@ -116,7 +116,7 @@ export default function Shop({ onAddToCart }) {
           </div>
 
           {loading && products.length === 0 ? (
-            <div className="py-24 text-center text-xs text-zinc-400">
+            <div className="py-24 text-center text-xs text-[#6B6256]">
               Loading the royal perfume vault...
             </div>
           ) : filtered.length ? (
@@ -130,13 +130,13 @@ export default function Shop({ onAddToCart }) {
               ))}
             </div>
           ) : (
-            <div className="py-24 text-center border border-[#D4AF37]/20 bg-[#121212] p-8">
-              <h2 className="font-editorial text-3xl text-zinc-300">No fragrances matched your criteria</h2>
-              <p className="mt-2 text-xs text-zinc-400">
+            <div className="py-24 text-center border-2 border-[#C59B27]/30 bg-[#FAF6ED] p-8 shadow-sm">
+              <h2 className="font-rakkas text-3xl text-[#0D0C0A]">No fragrances matched your criteria</h2>
+              <p className="mt-2 text-xs text-[#4A433A]">
                 Try selecting a different fragrance family or clearing search terms.
               </p>
               <button
-                className="mt-6 border border-[#D4AF37] bg-[#D4AF37] px-6 py-2.5 text-xs font-bold tracking-widest text-black hover:bg-[#E5C378]"
+                className="mt-6 border-2 border-[#D4AF37] bg-[#0D0C0A] px-6 py-2.5 text-xs font-bold font-kufi tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all"
                 onClick={() => setParams({})}
               >
                 RESET FILTERS
@@ -148,14 +148,14 @@ export default function Shop({ onAddToCart }) {
 
       {/* Mobile Filter Drawer */}
       {filtersOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs md:hidden">
-          <div className="absolute inset-y-0 left-0 w-72 border-r border-[#D4AF37]/25 bg-[#121212] p-6 text-white shadow-2xl">
-            <div className="mb-8 flex items-center justify-between border-b border-[#D4AF37]/20 pb-4">
-              <h2 className="font-editorial text-2xl text-[#F5F5F7]">Fragrance Filters</h2>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs md:hidden">
+          <div className="absolute inset-y-0 left-0 w-72 border-r-2 border-[#D4AF37]/50 bg-[#F4EBD9] p-6 text-[#0D0C0A] shadow-2xl">
+            <div className="mb-8 flex items-center justify-between border-b-2 border-[#C59B27]/30 pb-4">
+              <h2 className="font-rakkas text-2xl text-[#0D0C0A]">Fragrance Filters</h2>
               <button
                 onClick={() => setFiltersOpen(false)}
                 aria-label="Close filters"
-                className="text-zinc-400 hover:text-[#D4AF37]"
+                className="text-[#6B6256] hover:text-[#0D0C0A]"
               >
                 <X size={20} />
               </button>
@@ -168,8 +168,8 @@ export default function Shop({ onAddToCart }) {
                   <button
                     key={f}
                     onClick={() => setFamily(f)}
-                    className={`text-xs uppercase tracking-wider py-1 ${
-                      isSelected ? 'font-bold text-[#E5C378]' : 'text-zinc-400'
+                    className={`text-xs uppercase font-kufi tracking-wider py-1 ${
+                      isSelected ? 'font-bold text-[#D4AF37] border-l-2 border-[#D4AF37] pl-2' : 'text-[#4A433A]'
                     }`}
                   >
                     {f}
