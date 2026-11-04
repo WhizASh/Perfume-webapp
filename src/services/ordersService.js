@@ -23,13 +23,16 @@ export function generateOrderId() {
   return `IKK-${code}`;
 }
 
+export const ORDERS_STORAGE_KEY = 'ikk_perfume_orders';
+
 /**
- * Creates an order record in Firestore.
+ * Creates an order record in Firestore and localStorage.
  * @param {Object} orderData
  * @param {Array} orderData.items - Cart items
  * @param {number} orderData.subtotal - Total order price
  * @param {string} [orderData.customerName] - Customer name
  * @param {string} [orderData.customerPhone] - Customer phone
+ * @param {string} [orderData.customerAddress] - Customer shipping / delivery address
  * @param {string} [orderData.notes] - Customer special instructions
  * @returns {Promise<Object>} Created order data including orderId
  */
@@ -38,6 +41,7 @@ export async function createOrder({
   subtotal,
   customerName = '',
   customerPhone = '',
+  customerAddress = '',
   notes = '',
 }) {
   const orderId = generateOrderId();
@@ -46,19 +50,33 @@ export async function createOrder({
     items: items.map((i) => ({
       id: i.id,
       name: i.name,
-      size: i.size || '50 ml',
-      price: i.price,
-      quantity: i.quantity,
+      size: i.selectedVariant?.name || i.size || '50 ml',
+      price: Number(i.price ?? i.sellingPrice) || 0,
+      quantity: Number(i.quantity) || 1,
       image: i.image || '',
     })),
-    subtotal,
-    customerName,
-    customerPhone,
-    notes,
+    subtotal: Number(subtotal) || 0,
+    customerName: customerName.trim(),
+    customerPhone: customerPhone.trim(),
+    customerAddress: customerAddress.trim(),
+    notes: notes.trim(),
     status: 'redirected_to_whatsapp',
     createdAtIso: new Date().toISOString(),
   };
 
+  // 1. Instant local persistence for offline reliability & admin view
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const updated = [orderPayload, ...existing.filter((o) => o.orderId !== orderId)];
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updated.slice(0, 100)));
+    }
+  } catch (storageErr) {
+    console.warn('Failed to record order locally:', storageErr);
+  }
+
+  // 2. Persist to Cloud Firestore if connected
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, COLLECTION_NAME, orderId);
@@ -76,10 +94,21 @@ export async function createOrder({
 
 /**
  * Fetch all orders for the admin dashboard.
+ * Merges Cloud Firestore records with locally cached orders so no order is lost.
  */
 export async function fetchOrders() {
+  let localOrders = [];
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
+      if (raw) localOrders = JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn('Error reading local orders:', err);
+  }
+
   if (!isFirebaseConfigured || !db) {
-    return [];
+    return localOrders;
   }
 
   try {
@@ -88,23 +117,41 @@ export async function fetchOrders() {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    const list = [];
+    const firestoreOrders = [];
     snapshot.forEach((d) => {
-      list.push({ id: d.id, ...d.data() });
+      firestoreOrders.push({ id: d.id, ...d.data() });
     });
-    return list;
+
+    // Merge any local-only orders that haven't synced to Firestore yet
+    const firestoreIds = new Set(firestoreOrders.map((o) => o.orderId || o.id));
+    const merged = [...firestoreOrders];
+    for (const localOrder of localOrders) {
+      if (!firestoreIds.has(localOrder.orderId || localOrder.id)) {
+        merged.push(localOrder);
+      }
+    }
+    return merged;
   } catch (error) {
-    // If composite index is missing or orderBy fails, fallback to unordered getDocs
+    console.warn('Failed to query ordered Firestore orders, trying unindexed fallback:', error);
     try {
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-      const list = [];
+      const firestoreOrders = [];
       snapshot.forEach((d) => {
-        list.push({ id: d.id, ...d.data() });
+        firestoreOrders.push({ id: d.id, ...d.data() });
       });
-      return list.reverse();
+      firestoreOrders.reverse();
+
+      const firestoreIds = new Set(firestoreOrders.map((o) => o.orderId || o.id));
+      const merged = [...firestoreOrders];
+      for (const localOrder of localOrders) {
+        if (!firestoreIds.has(localOrder.orderId || localOrder.id)) {
+          merged.push(localOrder);
+        }
+      }
+      return merged;
     } catch (fallbackError) {
       console.warn('Failed to fetch orders from Firestore:', fallbackError);
-      return [];
+      return localOrders;
     }
   }
 }

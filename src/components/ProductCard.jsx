@@ -3,7 +3,39 @@ import { ShoppingBag, Tag, Play } from 'lucide-react';
 import { getProductDiscount } from '../services/productsService';
 
 export default function ProductCard({ product, onAddToCart }) {
-  const { hasDiscount, percent, mrp, selling } = getProductDiscount(product);
+  const variants = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants : [];
+  const minPrice = variants.length > 0
+    ? Math.min(...variants.map((v) => Number(v.price) || 0))
+    : Number(product.price) || 0;
+
+  const defaultVariant = variants[0] || null;
+  const { hasDiscount, percent, mrp, selling } = defaultVariant
+    ? {
+        hasDiscount: Boolean(defaultVariant.mrp && Number(defaultVariant.mrp) > Number(defaultVariant.price)),
+        percent:
+          defaultVariant.mrp && Number(defaultVariant.mrp) > Number(defaultVariant.price)
+            ? Math.round(((Number(defaultVariant.mrp) - Number(defaultVariant.price)) / Number(defaultVariant.mrp)) * 100)
+            : 0,
+        mrp: Number(defaultVariant.mrp || defaultVariant.price),
+        selling: Number(defaultVariant.price),
+      }
+    : getProductDiscount(product);
+
+  const handleQuickAdd = () => {
+    if (defaultVariant) {
+      onAddToCart({
+        ...product,
+        selectedVariant: defaultVariant,
+        price: Number(defaultVariant.price),
+        mrp: Number(defaultVariant.mrp || defaultVariant.price),
+        size: defaultVariant.name,
+        cartItemId: `${product.id}-${defaultVariant.name}`,
+        quantity: 1,
+      });
+    } else {
+      onAddToCart(product);
+    }
+  };
 
   return (
     <article className="group relative flex flex-row items-stretch justify-between overflow-hidden border-2 border-[#C59B27]/40 bg-[#FAF6ED] p-2.5 sm:p-4 transition-all duration-300 hover:border-[#D4AF37] hover:shadow-[0_12px_36px_rgba(212,175,55,0.25)] hover:-translate-y-0.5">
@@ -41,7 +73,7 @@ export default function ProductCard({ product, onAddToCart }) {
       <div className="flex flex-1 flex-col justify-between pl-3 sm:pl-5 min-w-0 py-0.5 sm:py-1">
         <div className="space-y-1">
           <p className="font-kufi text-[8.5px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#9E781E] font-bold">
-            {product.concentration} · {product.size}
+            {product.concentration} · {variants.length > 1 ? `${variants.length} Sizes (${variants.map((v) => v.name).join(', ')})` : (defaultVariant ? defaultVariant.name : product.size)}
           </p>
 
           <Link to={'/product/' + product.id}>
@@ -61,13 +93,13 @@ export default function ProductCard({ product, onAddToCart }) {
           <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2.5">
             {/* Selling Price */}
             <span className="text-lg sm:text-2xl font-bold tracking-tight text-[#0D0C0A]">
-              ₹{selling.toLocaleString('en-IN')}
+              {variants.length > 1 ? `From ₹${minPrice.toLocaleString('en-IN')}` : `₹${selling.toLocaleString('en-IN')}`}
             </span>
 
             {/* Slashed MRP */}
             {hasDiscount && (
               <span className="text-[11px] sm:text-sm text-[#6B6256] line-through decoration-[#8C8376]">
-                ₹{mrp.toLocaleString('en-IN')}
+                MRP: ₹{mrp.toLocaleString('en-IN')}
               </span>
             )}
 
@@ -81,7 +113,7 @@ export default function ProductCard({ product, onAddToCart }) {
 
           {/* Add to Bag Quick Button */}
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={handleQuickAdd}
             className="mt-2.5 sm:mt-3 flex w-full sm:w-fit items-center justify-center gap-2 border-2 border-[#D4AF37] bg-[#0D0C0A] px-4 sm:px-6 py-2 sm:py-2.5 text-[10.5px] sm:text-xs font-kufi font-bold tracking-[0.14em] sm:tracking-[0.18em] text-[#D4AF37] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black active:scale-98"
           >
             <ShoppingBag size={13} className="shrink-0" />

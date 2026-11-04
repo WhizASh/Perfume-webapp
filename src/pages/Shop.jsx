@@ -24,8 +24,8 @@ export default function Shop({ onAddToCart }) {
             .includes(q.toLowerCase()))
     );
 
-    if (sort === 'price-asc') data.sort((a, b) => (Number(a.sellingPrice ?? a.price) || 0) - (Number(b.sellingPrice ?? b.price) || 0));
-    if (sort === 'price-desc') data.sort((a, b) => (Number(b.sellingPrice ?? b.price) || 0) - (Number(a.sellingPrice ?? a.price) || 0));
+    if (sort === 'price-asc') data.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+    if (sort === 'price-desc') data.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
     if (sort === 'name') data.sort((a, b) => a.name.localeCompare(b.name));
 
     return data;

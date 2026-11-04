@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import ProductCard from '../components/ProductCard';
-import { proceedToWhatsAppCheckout } from '../services/whatsappService';
+import WhatsAppOrderModal from '../components/WhatsAppOrderModal';
 import {
   getProductDiscount,
   getProductMedia,
@@ -29,17 +29,41 @@ export default function ProductDetails({ onAddToCart }) {
   const { products, loading } = useProducts();
   const product = products.find((p) => p.id === id);
   const [qty, setQty] = useState(1);
-  const [orderingWhatsApp, setOrderingWhatsApp] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+
+  // Variants state
+  const variants = Array.isArray(product?.variants) && product.variants.length > 0 ? product.variants : [];
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
 
   // Multiple photos & video gallery state
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // Reset active media index when viewing a different product
+  // Reset active media & selected variant index when viewing a different product
   useEffect(() => {
     setActiveMediaIndex(0);
     setLightboxOpen(false);
+    setSelectedVariantIndex(0);
   }, [id]);
+
+  const selectedVariant = variants[selectedVariantIndex] || variants[0] || null;
+
+  // Active pricing calculation (matching selected variant or base product)
+  const currentSellingPrice = selectedVariant
+    ? Number(selectedVariant.price)
+    : Number(product?.price) || 0;
+
+  const currentMrp = selectedVariant
+    ? (selectedVariant.mrp !== undefined && selectedVariant.mrp !== null && selectedVariant.mrp !== ''
+        ? Number(selectedVariant.mrp)
+        : currentSellingPrice)
+    : (product?.mrp !== undefined && product?.mrp !== null && product?.mrp !== ''
+        ? Number(product.mrp)
+        : currentSellingPrice);
+
+  const hasDiscount = currentMrp > currentSellingPrice && currentSellingPrice > 0;
+  const savings = hasDiscount ? currentMrp - currentSellingPrice : 0;
+  const percent = hasDiscount ? Math.round((savings / currentMrp) * 100) : 0;
 
   const mediaItems = product ? getProductMedia(product) : [];
   const activeItem = mediaItems[activeMediaIndex] || mediaItems[0] || (product?.image ? { type: 'image', url: product.image } : null);
@@ -95,30 +119,39 @@ export default function ProductDetails({ onAddToCart }) {
   }
 
   const handleAddToCart = () => {
-    for (let i = 0; i < qty; i++) {
-      onAddToCart(product);
-    }
+    const itemToAdd = {
+      ...product,
+      selectedVariant,
+      price: currentSellingPrice,
+      sellingPrice: currentSellingPrice,
+      mrp: currentMrp,
+      size: selectedVariant ? selectedVariant.name : product.size,
+      cartItemId: selectedVariant ? `${product.id}-${selectedVariant.name}` : product.id,
+      quantity: qty,
+    };
+    onAddToCart(itemToAdd);
   };
 
-  const handleDirectWhatsAppOrder = async () => {
-    setOrderingWhatsApp(true);
-    try {
-      await proceedToWhatsAppCheckout({
-        items: [{ ...product, quantity: qty }],
-        subtotal: product.price * qty,
-      });
-    } catch (err) {
-      alert('Could not open WhatsApp: ' + err.message);
-    } finally {
-      setOrderingWhatsApp(false);
-    }
+  const itemToOrder = product
+    ? {
+        ...product,
+        selectedVariant,
+        price: currentSellingPrice,
+        sellingPrice: currentSellingPrice,
+        mrp: currentMrp,
+        size: selectedVariant ? selectedVariant.name : product.size,
+        cartItemId: selectedVariant ? `${product.id}-${selectedVariant.name}` : product.id,
+        quantity: qty,
+      }
+    : null;
+
+  const handleDirectWhatsAppOrder = () => {
+    setShowOrderModal(true);
   };
 
   const relatedProducts = products
     .filter((p) => p.id !== id)
     .slice(0, 4);
-
-  const { hasDiscount, percent, savings, mrp, selling } = getProductDiscount(product);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:px-8 md:py-12 text-[#141311]">
@@ -283,7 +316,7 @@ export default function ProductDetails({ onAddToCart }) {
           <div className="inline-flex items-center gap-2">
             <Sparkles size={13} className="text-[#D4AF37]" />
             <p className="font-kufi text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#9E781E]">
-              {product.concentration} · {product.size} · {product.family}
+              {product.concentration} · {selectedVariant ? selectedVariant.name : product.size} · {product.family}
             </p>
           </div>
 
@@ -298,12 +331,12 @@ export default function ProductDetails({ onAddToCart }) {
           {/* Pricing: Discounted Selling Price, Slashed MRP, and Green Sale Tag */}
           <div className="mt-4 sm:mt-6 flex flex-wrap items-baseline gap-2.5 sm:gap-3.5">
             <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#0D0C0A]">
-              ₹{selling.toLocaleString('en-IN')}
+              ₹{currentSellingPrice.toLocaleString('en-IN')}
             </span>
 
             {hasDiscount && (
               <span className="text-base sm:text-lg text-[#6B6256] line-through decoration-[#8C8376]">
-                MRP: ₹{mrp.toLocaleString('en-IN')}
+                MRP: ₹{currentMrp.toLocaleString('en-IN')}
               </span>
             )}
 
@@ -336,6 +369,74 @@ export default function ProductDetails({ onAddToCart }) {
               <span>Complimentary Shipping ₹2,999+</span>
             </div>
           </div>
+
+          {/* Luxury Variant Selector (20ml, 50ml, 100ml, etc.) */}
+          {variants.length > 0 && (
+            <div className="mb-5 sm:mb-6">
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="font-kufi text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#9E781E]">
+                  SELECT BOTTLE SIZE / VARIANT
+                </p>
+                {selectedVariant && (
+                  <span className="text-xs text-[#4A433A] font-medium">
+                    Selected: <strong className="text-[#0D0C0A] font-bold">{selectedVariant.name}</strong>
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2.5 sm:gap-3">
+                {variants.map((v, idx) => {
+                  const isSelected = idx === selectedVariantIndex;
+                  const vPrice = Number(v.price) || 0;
+                  const vMrp = Number(v.mrp) || 0;
+                  const vHasDiscount = vMrp > vPrice && vPrice > 0;
+                  const vPercent = vHasDiscount ? Math.round(((vMrp - vPrice) / vMrp) * 100) : 0;
+
+                  return (
+                    <button
+                      key={v.id || v.name || idx}
+                      type="button"
+                      onClick={() => setSelectedVariantIndex(idx)}
+                      className={`group relative flex items-center justify-between gap-3 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded border-2 transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? 'border-[#D4AF37] bg-[#0D0C0A] text-[#FAF6ED] shadow-[0_4px_16px_rgba(212,175,55,0.25)] ring-2 ring-[#D4AF37]/50 scale-[1.02]'
+                          : 'border-[#C59B27]/40 bg-[#FAF6ED] text-[#0D0C0A] hover:border-[#D4AF37] hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span
+                          className={`font-kufi text-xs sm:text-sm font-bold tracking-wider ${
+                            isSelected ? 'text-[#D4AF37]' : 'text-[#0D0C0A]'
+                          }`}
+                        >
+                          {v.name}
+                        </span>
+                        <span
+                          className={`text-[11px] font-semibold ${
+                            isSelected ? 'text-zinc-300' : 'text-[#6B6256]'
+                          }`}
+                        >
+                          ₹{vPrice.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      {vHasDiscount && (
+                        <span
+                          className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${
+                            isSelected
+                              ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300'
+                              : 'border-emerald-600/40 bg-emerald-50 text-emerald-700'
+                          }`}
+                        >
+                          {vPercent}% OFF
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Quantity Stepper */}
           <div>
@@ -370,13 +471,12 @@ export default function ProductDetails({ onAddToCart }) {
               className="flex w-full sm:w-auto items-center justify-center gap-2.5 border-2 border-[#D4AF37] bg-[#0D0C0A] px-6 sm:px-8 py-3.5 text-xs font-bold font-kufi tracking-[0.16em] sm:tracking-[0.2em] text-[#D4AF37] shadow-[0_4px_16px_rgba(0,0,0,0.35)] hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black transition-all text-center"
             >
               <ShoppingBag size={15} />
-              <span>ADD TO BAG — ₹{(product.price * qty).toLocaleString('en-IN')}</span>
+              <span>ADD TO BAG — ₹{(currentSellingPrice * qty).toLocaleString('en-IN')}</span>
             </button>
 
             <button
               onClick={handleDirectWhatsAppOrder}
-              disabled={orderingWhatsApp}
-              className="flex w-full sm:w-auto items-center justify-center gap-2 border-2 border-[#25D366] bg-[#25D366]/10 px-6 py-3.5 text-xs font-bold font-kufi tracking-[0.14em] sm:tracking-[0.16em] text-emerald-800 hover:bg-[#25D366] hover:text-white transition-colors disabled:opacity-50 text-center"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 border-2 border-[#25D366] bg-[#25D366]/10 px-6 py-3.5 text-xs font-bold font-kufi tracking-[0.14em] sm:tracking-[0.16em] text-emerald-800 hover:bg-[#25D366] hover:text-white transition-colors cursor-pointer text-center"
             >
               <MessageCircle size={16} />
               <span>ORDER VIA WHATSAPP</span>
@@ -525,6 +625,16 @@ export default function ProductDetails({ onAddToCart }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Customer Contact & Delivery Popup for WhatsApp Orders */}
+      {itemToOrder && (
+        <WhatsAppOrderModal
+          isOpen={showOrderModal}
+          onClose={() => setShowOrderModal(false)}
+          items={[itemToOrder]}
+          subtotal={currentSellingPrice * qty}
+        />
       )}
     </main>
   );

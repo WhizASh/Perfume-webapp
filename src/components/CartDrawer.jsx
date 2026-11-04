@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Minus, Plus, Trash2, MessageCircle, ArrowRight, Check, Sparkles } from 'lucide-react';
-import { proceedToWhatsAppCheckout } from '../services/whatsappService';
+import WhatsAppOrderModal from './WhatsAppOrderModal';
 
 export default function CartDrawer({
   open,
@@ -9,43 +9,18 @@ export default function CartDrawer({
   onQuantity,
   onClearCart,
 }) {
-  const [customerName, setCustomerName] = useState('');
-  const [notes, setNotes] = useState('');
-  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderComplete, setOrderComplete] = useState(null);
 
   if (!open) return null;
 
-  const subtotal = items.reduce((s, i) => s + (Number(i.sellingPrice ?? i.price) || 0) * i.quantity, 0);
-  const totalMrp = items.reduce((s, i) => s + (Number(i.mrp || i.sellingPrice || i.price) || 0) * i.quantity, 0);
+  const subtotal = items.reduce((s, i) => s + (Number(i.price ?? i.sellingPrice) || 0) * i.quantity, 0);
+  const totalMrp = items.reduce((s, i) => s + (Number(i.mrp || (i.price ?? i.sellingPrice)) || 0) * i.quantity, 0);
   const totalSavings = totalMrp - subtotal;
 
-  const handleWhatsAppCheckout = async (e) => {
-    if (e) e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const order = await proceedToWhatsAppCheckout({
-        items,
-        subtotal,
-        customerName,
-        notes,
-      });
-
-      setOrderComplete(order);
-      if (onClearCart) onClearCart();
-
-      // Reset form states
-      setCustomerName('');
-      setNotes('');
-      setShowCheckoutForm(false);
-    } catch (err) {
-      console.error('Checkout error:', err);
-      alert('Unable to initiate WhatsApp checkout: ' + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleOrderSuccess = (order) => {
+    setOrderComplete(order);
+    if (onClearCart) onClearCart();
   };
 
   return (
@@ -125,54 +100,57 @@ export default function CartDrawer({
           <>
             {/* Items List */}
             <div className="flex-1 overflow-y-auto divide-y divide-[#C59B27]/20 pr-1 my-3 sm:my-4">
-              {items.map((item) => (
-                <div key={item.id} className="flex gap-3 sm:gap-4 py-3.5 sm:py-4 items-center">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="size-14 sm:size-16 shrink-0 object-cover border-2 border-[#C59B27]/30 bg-[#EFE3C8]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-rakkas text-lg sm:text-xl font-normal text-[#0D0C0A] truncate">
-                      {item.name}
-                    </h3>
-                    <p className="font-kufi text-[9.5px] uppercase tracking-wider text-[#9E781E] font-bold">
-                      {item.size || '50 ml'}
-                    </p>
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <span className="text-sm font-bold text-[#0D0C0A]">
-                        ₹{(Number(item.sellingPrice ?? item.price) || 0).toLocaleString('en-IN')}
-                      </span>
-                      {item.mrp && Number(item.mrp) > Number(item.sellingPrice ?? item.price) && (
-                        <span className="text-[10px] text-[#6B6256] line-through">
-                          ₹{Number(item.mrp).toLocaleString('en-IN')}
+              {items.map((item) => {
+                const itemKey = item.cartItemId || item.id;
+                return (
+                  <div key={itemKey} className="flex gap-3 sm:gap-4 py-3.5 sm:py-4 items-center">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="size-14 sm:size-16 shrink-0 object-cover border-2 border-[#C59B27]/30 bg-[#EFE3C8]"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-rakkas text-lg sm:text-xl font-normal text-[#0D0C0A] truncate">
+                        {item.name}
+                      </h3>
+                      <p className="font-kufi text-[9.5px] uppercase tracking-wider text-[#9E781E] font-bold">
+                        {item.selectedVariant?.name || item.size || '50 ml'}
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span className="text-sm font-bold text-[#0D0C0A]">
+                          ₹{(Number(item.price) || 0).toLocaleString('en-IN')}
                         </span>
-                      )}
+                        {item.mrp && Number(item.mrp) > Number(item.price) && (
+                          <span className="text-[10px] text-[#6B6256] line-through">
+                            ₹{Number(item.mrp).toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quantity Stepper */}
+                    <div className="flex items-center border-2 border-[#C59B27]/40 bg-[#FAF6ED] rounded shrink-0">
+                      <button
+                        onClick={() => onQuantity(itemKey, -1)}
+                        className="p-1.5 sm:p-2 text-[#4A433A] hover:text-[#0D0C0A]"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="px-2 text-xs font-bold text-[#0D0C0A]">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => onQuantity(itemKey, 1)}
+                        className="p-1.5 sm:p-2 text-[#4A433A] hover:text-[#0D0C0A]"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus size={12} />
+                      </button>
                     </div>
                   </div>
-
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center border-2 border-[#C59B27]/40 bg-[#FAF6ED] rounded shrink-0">
-                    <button
-                      onClick={() => onQuantity(item.id, -1)}
-                      className="p-1.5 sm:p-2 text-[#4A433A] hover:text-[#0D0C0A]"
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus size={12} />
-                    </button>
-                    <span className="px-2 text-xs font-bold text-[#0D0C0A]">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => onQuantity(item.id, 1)}
-                      className="p-1.5 sm:p-2 text-[#4A433A] hover:text-[#0D0C0A]"
-                      aria-label="Increase quantity"
-                    >
-                      <Plus size={12} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Subtotal & Direct WhatsApp Checkout */}
@@ -208,45 +186,28 @@ export default function CartDrawer({
                 </p>
               )}
 
-              {/* Optional Name/Notes dropdown */}
-              {!showCheckoutForm ? (
-                <button
-                  type="button"
-                  onClick={() => setShowCheckoutForm(true)}
-                  className="text-[11px] text-[#9E781E] hover:underline block font-bold font-kufi"
-                >
-                  + Add Name & Delivery Notes (Optional)
-                </button>
-              ) : (
-                <div className="space-y-2 border-2 border-[#C59B27]/30 bg-[#FAF6ED] p-2.5 sm:p-3 text-xs">
-                  <input
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Your Name"
-                    className="w-full border border-[#C59B27]/40 bg-white p-2 text-base sm:text-xs text-[#0D0C0A] placeholder-[#6B6256] focus:border-[#D4AF37] focus:outline-none"
-                  />
-                  <input
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Delivery City / Special Instructions"
-                    className="w-full border border-[#C59B27]/40 bg-white p-2 text-base sm:text-xs text-[#0D0C0A] placeholder-[#6B6256] focus:border-[#D4AF37] focus:outline-none"
-                  />
-                </div>
-              )}
-
               <button
-                onClick={handleWhatsAppCheckout}
-                disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2.5 border-2 border-[#D4AF37] bg-[#0D0C0A] py-3 sm:py-3.5 text-xs font-kufi font-bold tracking-[0.16em] sm:tracking-[0.18em] text-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.35)] transition-all hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black"
+                onClick={() => setShowOrderModal(true)}
+                disabled={items.length === 0}
+                className="flex w-full items-center justify-center gap-2.5 border-2 border-[#D4AF37] bg-[#0D0C0A] py-3 sm:py-3.5 text-xs font-kufi font-bold tracking-[0.16em] sm:tracking-[0.18em] text-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.35)] transition-all hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black cursor-pointer"
               >
                 <MessageCircle size={16} />
-                <span>{isSubmitting ? 'CONNECTING...' : 'ORDER VIA WHATSAPP'}</span>
+                <span>ORDER VIA WHATSAPP</span>
                 <ArrowRight size={14} />
               </button>
             </div>
           </>
         )}
       </aside>
+
+      {/* Customer Contact & Address Modal */}
+      <WhatsAppOrderModal
+        isOpen={showOrderModal}
+        onClose={() => setShowOrderModal(false)}
+        items={items}
+        subtotal={subtotal}
+        onOrderSuccess={handleOrderSuccess}
+      />
     </div>
   );
 }

@@ -18,6 +18,11 @@ import {
   ExternalLink,
   Sparkles,
   Tag,
+  Phone,
+  MapPin,
+  User,
+  MessageCircle,
+  Copy,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
@@ -36,6 +41,7 @@ export default function Admin() {
     addCategory,
     removeCategory,
     seedCatalog,
+    migrateCatalog,
   } = useProducts();
   const { slides, addSlide, removeSlide, refreshSlides } = useCarousel();
 
@@ -53,11 +59,8 @@ export default function Admin() {
   const [editingProductId, setEditingProductId] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
-    mrp: '',
-    price: '',
     concentration: 'Eau de Parfum',
     family: 'Perfume',
-    size: '50 ml',
     notes: '',
     description: '',
   });
@@ -69,6 +72,7 @@ export default function Admin() {
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState('');
   const [existingVideo, setExistingVideo] = useState('');
+  const [variants, setVariants] = useState([]);
   const [formLoading, setFormLoading] = useState(false);
   const [formSuccess, setFormSuccess] = useState('');
   const [formError, setFormError] = useState('');
@@ -187,18 +191,45 @@ export default function Admin() {
     }
   };
 
+  // Product Variants Helpers
+  const handleAddVariant = (preset = { name: '', price: '', mrp: '' }) => {
+    setVariants((prev) => [
+      ...prev,
+      {
+        id: `var-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name: preset.name || '',
+        price: preset.price !== undefined ? String(preset.price) : '',
+        mrp: preset.mrp !== undefined ? String(preset.mrp) : '',
+      },
+    ]);
+  };
+
+  const handleUpdateVariant = (index, field, value) => {
+    setVariants((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleRemoveVariant = (index) => {
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const openNewProductModal = () => {
     setEditingProductId(null);
     setProductForm({
       name: '',
-      mrp: '',
-      price: '',
       concentration: 'Eau de Parfum',
       family: categories[0]?.name || 'Perfume',
-      size: '50 ml',
       notes: '',
       description: '',
     });
+    setVariants([
+      { id: 'v1', name: '20 ml', price: '', mrp: '' },
+      { id: 'v2', name: '50 ml', price: '', mrp: '' },
+      { id: 'v3', name: '100 ml', price: '', mrp: '' },
+    ]);
     setImageFile(null);
     setImagePreview('');
     setAdditionalImageFiles([]);
@@ -218,14 +249,33 @@ export default function Admin() {
 
     setProductForm({
       name: product.name || '',
-      mrp: product.mrp !== undefined && product.mrp !== null ? String(product.mrp) : '',
-      price: product.sellingPrice !== undefined ? String(product.sellingPrice) : String(product.price || ''),
       concentration: product.concentration || 'Eau de Parfum',
       family: product.family || categories[0]?.name || 'Perfume',
-      size: product.size || '50 ml',
       notes: product.notes || '',
       description: product.description || '',
     });
+
+    if (Array.isArray(product.variants) && product.variants.length > 0) {
+      setVariants(
+        product.variants.map((v, i) => ({
+          id: v.id || `v-${i}-${Date.now()}`,
+          name: v.name || '',
+          price: v.price !== undefined && v.price !== null ? String(v.price) : '',
+          mrp: v.mrp !== undefined && v.mrp !== null ? String(v.mrp) : '',
+        }))
+      );
+    } else {
+      // For any legacy single-price product being edited, prefill a default variant using its existing size and price
+      setVariants([
+        {
+          id: 'v1',
+          name: product.size || '50 ml',
+          price: product.price !== undefined ? String(product.price) : String(product.sellingPrice || ''),
+          mrp: product.mrp !== undefined && product.mrp !== null ? String(product.mrp) : '',
+        },
+      ]);
+    }
+
     setImageFile(null);
     setImagePreview(product.image || '');
     setAdditionalImageFiles([]);
@@ -246,9 +296,32 @@ export default function Admin() {
     setFormLoading(true);
 
     try {
-      if (!productForm.name || !productForm.price) {
-        throw new Error('Please fill in product name and selling price.');
+      // Clean and normalize variants
+      const cleanedVariants = variants
+        .map((v) => ({
+          id: v.id,
+          name: String(v.name || '').trim(),
+          price: Number(v.price) || 0,
+          mrp:
+            v.mrp !== undefined && v.mrp !== null && v.mrp !== ''
+              ? Number(v.mrp)
+              : Number(v.price) || 0,
+        }))
+        .filter((v) => v.name.length > 0 && v.price > 0);
+
+      if (!productForm.name?.trim()) {
+        throw new Error('Please enter a fragrance name.');
       }
+
+      if (cleanedVariants.length === 0) {
+        throw new Error('Please configure at least one variant with a name and price (e.g. 20ml, 50ml, 100ml).');
+      }
+
+      // Base price and MRP automatically derived from primary variant
+      const primaryVariant = cleanedVariants[0];
+      const finalPrice = primaryVariant.price;
+      const finalMrp = primaryVariant.mrp || finalPrice;
+      const finalSize = productForm.size?.trim() || primaryVariant.name;
 
       if (!imageFile && !imagePreview) {
         throw new Error('Primary cover photo is required. (Additional photos and video are optional).');
@@ -257,6 +330,10 @@ export default function Admin() {
       await addProduct(
         {
           ...productForm,
+          size: finalSize,
+          price: finalPrice,
+          mrp: finalMrp,
+          variants: cleanedVariants,
           id: editingProductId || undefined,
           image: imagePreview,
           images: existingAdditionalImages,
@@ -268,8 +345,8 @@ export default function Admin() {
       );
       setFormSuccess(
         editingProductId
-          ? 'Product & media updated successfully!'
-          : 'Product & media saved successfully to catalog!'
+          ? 'Product, variants & media updated successfully!'
+          : 'Product, variants & media saved successfully to catalog!'
       );
 
       setTimeout(() => {
@@ -407,6 +484,30 @@ export default function Admin() {
         await removeSlide(id);
       } catch (err) {
         alert('Failed to delete carousel slide: ' + err.message);
+      }
+    }
+  };
+
+  const [migrating, setMigrating] = useState(false);
+
+  const handleMigrate = async () => {
+    if (
+      window.confirm(
+        'Migrate database schema to Version 2?\n\nThis will:\n• Normalize all product variants and variant-based pricing\n• Purge deprecated fields (sellingPrice, badge, media)\n• Update Cloud Firestore and browser localStorage'
+      )
+    ) {
+      setMigrating(true);
+      try {
+        const res = await migrateCatalog();
+        alert(
+          `Database Migration Successful!\n\nTarget: ${res?.storage || 'Storage'}\nRecords Processed: ${
+            res?.migratedCount ?? 'All'
+          }\nSchema Version: 2`
+        );
+      } catch (err) {
+        alert('Migration failed: ' + err.message);
+      } finally {
+        setMigrating(false);
       }
     }
   };
@@ -637,16 +738,25 @@ export default function Admin() {
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleMigrate}
+                disabled={migrating}
+                className="flex items-center gap-1.5 border border-[#C59B27] bg-[#C59B27]/15 px-3.5 py-2 text-xs font-semibold text-[#141311] hover:bg-[#C59B27] hover:text-black transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                title="Migrate database to schema v2: sanitize legacy fields and normalize variants"
+              >
+                <RefreshCw size={13} className={migrating ? 'animate-spin' : ''} />
+                {migrating ? 'MIGRATING...' : 'MIGRATE SCHEMA V2'}
+              </button>
               <button
                 onClick={handleSeed}
-                className="flex items-center gap-1.5 border border-[#C59B27]/40 bg-white px-4 py-2 text-xs font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-all shadow-xs"
+                className="flex items-center gap-1.5 border border-[#C59B27]/40 bg-white px-3.5 py-2 text-xs font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-all shadow-xs cursor-pointer"
               >
-                <Database size={14} /> SYNC ALL TO FIRESTORE
+                <Database size={13} /> SYNC ALL TO FIRESTORE
               </button>
               <button
                 onClick={openNewProductModal}
-                className="flex items-center gap-1.5 border border-[#141311] bg-[#141311] px-4 py-2 text-xs font-bold tracking-wider text-[#D4AF37] hover:bg-[#C59B27] hover:border-[#C59B27] hover:text-black transition-all shadow-xs"
+                className="flex items-center gap-1.5 border border-[#141311] bg-[#141311] px-4 py-2 text-xs font-bold tracking-wider text-[#D4AF37] hover:bg-[#C59B27] hover:border-[#C59B27] hover:text-black transition-all shadow-xs cursor-pointer"
               >
                 <Plus size={15} /> ADD NEW PERFUME
               </button>
@@ -661,15 +771,14 @@ export default function Admin() {
                   <th className="px-4 py-3">Photo</th>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Family</th>
-                  <th className="px-4 py-3">Size</th>
-                  <th className="px-4 py-3">Pricing (Selling / Slashed MRP)</th>
-                  <th className="px-4 py-3">Badge</th>
+                  <th className="px-4 py-3">Variants & Sizes</th>
+                  <th className="px-4 py-3">Pricing (Base / MRP)</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#C59B27]/15">
                 {products.map((p) => {
-                  const selling = Number(p.sellingPrice ?? p.price) || 0;
+                  const selling = Number(p.price) || 0;
                   const mrp = Number(p.mrp) || 0;
                   const hasDiscount = mrp > selling && selling > 0;
                   const percent = hasDiscount ? Math.round(((mrp - selling) / mrp) * 100) : 0;
@@ -688,7 +797,22 @@ export default function Admin() {
                         <div className="text-[10px] text-[#78716C]">{p.notes}</div>
                       </td>
                       <td className="px-4 py-3 text-[#57524A]">{p.family}</td>
-                      <td className="px-4 py-3 text-[#57524A]">{p.size}</td>
+                      <td className="px-4 py-3 text-[#57524A]">
+                        {Array.isArray(p.variants) && p.variants.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-[240px]">
+                            {p.variants.map((v) => (
+                              <span
+                                key={v.id || v.name}
+                                className="inline-flex items-center gap-1 rounded bg-[#F3EFE6] border border-[#C59B27]/30 px-1.5 py-0.5 text-[9.5px] font-semibold text-[#141311]"
+                              >
+                                <strong className="text-[#996515]">{v.name}:</strong> ₹{Number(v.price).toLocaleString('en-IN')}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div>{p.size || '50 ml'}</div>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="font-semibold text-[#141311]">
                           ₹{selling.toLocaleString('en-IN')}
@@ -706,19 +830,12 @@ export default function Admin() {
                           <div className="text-[10px] text-[#78716C]">Regular Price</div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {p.badge && (
-                          <span className="font-kufi rounded bg-[#C59B27]/15 border border-[#C59B27]/40 px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#996515]">
-                            {p.badge}
-                          </span>
-                        )}
-                      </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => openEditProductModal(p)}
                             className="p-1.5 text-[#996515] hover:text-[#C59B27] transition-colors"
-                            title="Edit product & pricing"
+                            title="Edit product & variants"
                           >
                             <Edit2 size={15} />
                           </button>
@@ -986,19 +1103,57 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="text-xs text-[#57524A] space-y-1">
-                      <p className="font-kufi mb-2 text-[10px] uppercase tracking-wider text-[#996515] font-semibold">
-                        Customer Context
+                    <div className="text-xs text-[#57524A] space-y-2 border-t md:border-t-0 md:border-l border-[#C59B27]/15 md:pl-4">
+                      <p className="font-kufi text-[10px] uppercase tracking-wider text-[#996515] font-semibold flex items-center gap-1">
+                        <User size={12} /> Customer Information
                       </p>
+
                       {order.customerName && (
-                        <p>
-                          <strong className="text-[#141311]">Name:</strong> {order.customerName}
-                        </p>
+                        <div className="flex items-start gap-1.5">
+                          <span className="font-semibold text-[#141311] shrink-0">Name:</span>
+                          <span className="text-[#0D0C0A] font-medium">{order.customerName}</span>
+                        </div>
                       )}
+
+                      {order.customerPhone && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-[#141311] shrink-0">Phone:</span>
+                          <a
+                            href={`tel:${order.customerPhone}`}
+                            className="font-mono text-[#996515] hover:underline font-bold"
+                          >
+                            {order.customerPhone}
+                          </a>
+                          <a
+                            href={`https://wa.me/${order.customerPhone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded bg-[#25D366]/15 border border-[#25D366]/40 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-800 hover:bg-[#25D366] hover:text-white transition-colors"
+                            title="Chat on WhatsApp"
+                          >
+                            <MessageCircle size={10} /> Chat
+                          </a>
+                        </div>
+                      )}
+
+                      {(order.customerAddress || order.address) && (
+                        <div className="flex items-start gap-2 bg-[#FAF6ED] p-2.5 border border-[#C59B27]/25 rounded">
+                          <MapPin size={14} className="text-[#996515] shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <span className="font-semibold text-[#141311] block text-[10px] uppercase tracking-wider text-[#996515]">
+                              Delivery Address:
+                            </span>
+                            <p className="text-[#0D0C0A] whitespace-pre-wrap leading-relaxed mt-0.5 text-[11.5px]">
+                              {order.customerAddress || order.address}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                       {order.notes && (
-                        <p>
-                          <strong className="text-[#141311]">Delivery City / Notes:</strong> {order.notes}
-                        </p>
+                        <div className="text-[11.5px] text-[#57524A] bg-white p-2 border border-dashed border-[#C59B27]/25">
+                          <strong className="text-[#141311]">Instructions:</strong> {order.notes}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1044,6 +1199,41 @@ export default function Admin() {
                 +{getWhatsAppNumber()}
               </span>
             </div>
+            <div className="flex justify-between py-2.5 items-center">
+              <div>
+                <span className="font-semibold text-[#57524A]">Database Schema Version:</span>
+                <p className="text-[11px] text-[#78716C]">
+                  Variants-driven pricing, redundant fields purged (sellingPrice, badge, media)
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 border border-emerald-300">
+                v2 (Active)
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 border border-[#C59B27]/20 bg-[#FAF6ED] p-5">
+            <h3 className="font-editorial text-lg text-[#141311]">Database Migrations</h3>
+            <p className="mt-1 text-xs text-[#57524A] leading-relaxed">
+              Execute a schema migration across the catalog. This ensures all documents in Cloud Firestore and
+              client storage have clean variant structures, removes legacy duplicate keys, and enforces schema v2 integrity.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                onClick={handleMigrate}
+                disabled={migrating}
+                className="flex items-center gap-1.5 border border-[#141311] bg-[#141311] px-4 py-2 text-xs font-bold tracking-wider text-[#D4AF37] hover:bg-[#C59B27] hover:border-[#C59B27] hover:text-black transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={migrating ? 'animate-spin' : ''} />
+                {migrating ? 'APPLYING MIGRATION...' : 'APPLY SCHEMA V2 MIGRATION'}
+              </button>
+              <button
+                onClick={handleSeed}
+                className="flex items-center gap-1.5 border border-[#C59B27]/50 bg-white px-4 py-2 text-xs font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-all shadow-xs cursor-pointer"
+              >
+                <Database size={14} /> FULL RE-SYNC TO FIRESTORE
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -1055,10 +1245,10 @@ export default function Admin() {
             <div className="flex items-center justify-between border-b border-[#C59B27]/20 pb-4">
               <div>
                 <h3 className="font-editorial text-2xl text-[#141311]">
-                  {editingProductId ? 'Edit Fragrance & Pricing' : 'Add New Fragrance'}
+                  {editingProductId ? 'Edit Fragrance & Variants' : 'Add New Fragrance'}
                 </h3>
                 <p className="text-xs text-[#57524A]">
-                  Configure MRP (slashed) and Selling Price (discounted with green sale tag)
+                  Configure fragrance details, variant sizes, pricing, and media photography
                 </p>
               </div>
               <button
@@ -1099,62 +1289,7 @@ export default function Admin() {
                 />
               </div>
 
-              {/* TWO PRICING OPTIONS: MRP (SLASHED) & SELLING PRICE (DISCOUNTED) */}
               <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px]">
-                    MRP (₹) — MAXIMUM RETAIL PRICE
-                  </label>
-                  <input
-                    type="number"
-                    value={productForm.mrp}
-                    onChange={(e) =>
-                      setProductForm({ ...productForm, mrp: e.target.value })
-                    }
-                    placeholder="e.g. 4999 (Shown slashed)"
-                    className="mt-1 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-2.5 text-[#141311] focus:border-[#C59B27] focus:outline-none"
-                  />
-                  <p className="mt-1 text-[10px] text-[#78716C]">
-                    Original retail price (displayed with a strikethrough).
-                  </p>
-                </div>
-
-                <div>
-                  <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px] flex items-center justify-between">
-                    <span>SELLING PRICE (₹) *</span>
-                    {productForm.mrp && Number(productForm.mrp) > Number(productForm.price) && (
-                      <span className="inline-flex items-center gap-1 rounded bg-emerald-700/10 border border-emerald-700/30 px-1.5 py-0.2 text-[9.5px] font-bold text-emerald-700">
-                        {Math.round(((Number(productForm.mrp) - Number(productForm.price)) / Number(productForm.mrp)) * 100)}% DISCOUNT
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={productForm.price}
-                    onChange={(e) =>
-                      setProductForm({ ...productForm, price: e.target.value })
-                    }
-                    placeholder="e.g. 3499 (Discounted price)"
-                    className="mt-1 w-full border border-[#C59B27]/50 bg-[#FAF7F2] p-2.5 text-[#141311] font-semibold focus:border-[#C59B27] focus:outline-none"
-                  />
-                  <p className="mt-1 text-[10px] text-[#78716C]">
-                    Discounted selling price (shown with green sale tag).
-                  </p>
-                </div>
-              </div>
-
-              {/* Live Discount Summary if MRP > Selling Price */}
-              {productForm.mrp && Number(productForm.mrp) > Number(productForm.price) && (
-                <div className="flex items-center gap-2 border border-emerald-700/30 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 rounded">
-                  <span className="font-bold">🏷️ Green Sale Tag Preview:</span>
-                  <span>
-                    MRP <span className="line-through">₹{Number(productForm.mrp).toLocaleString('en-IN')}</span> → Selling Price ₹{Number(productForm.price).toLocaleString('en-IN')} (Save ₹{(Number(productForm.mrp) - Number(productForm.price)).toLocaleString('en-IN')} · {Math.round(((Number(productForm.mrp) - Number(productForm.price)) / Number(productForm.mrp)) * 100)}% OFF)
-                  </span>
-                </div>
-              )}
-
-              <div className="grid gap-4 md:grid-cols-3">
                 <div>
                   <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px]">
                     FRAGRANCE FAMILY
@@ -1190,20 +1325,6 @@ export default function Admin() {
                     className="mt-1 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-2.5 text-[#141311] focus:border-[#C59B27] focus:outline-none"
                   />
                 </div>
-
-                <div>
-                  <label className="font-kufi block font-bold tracking-wider text-[#996515] uppercase text-[10px]">
-                    BOTTLE SIZE
-                  </label>
-                  <input
-                    value={productForm.size}
-                    onChange={(e) =>
-                      setProductForm({ ...productForm, size: e.target.value })
-                    }
-                    placeholder="50 ml / 12 ml Attar"
-                    className="mt-1 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-2.5 text-[#141311] focus:border-[#C59B27] focus:outline-none"
-                  />
-                </div>
               </div>
 
               <div>
@@ -1236,6 +1357,165 @@ export default function Admin() {
                   placeholder="An exquisite olfactory journey..."
                   className="mt-1 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-2.5 text-[#141311] focus:border-[#C59B27] focus:outline-none"
                 />
+              </div>
+
+              {/* PRODUCT VARIANTS & SIZES (e.g. 20ml, 50ml, 100ml) */}
+              <div className="border-2 border-[#C59B27]/40 bg-[#FAF7F2] p-4 rounded space-y-3 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#C59B27]/25 pb-2.5">
+                  <div>
+                    <label className="font-kufi flex items-center gap-2 font-bold tracking-wider text-[#996515] uppercase text-[10px]">
+                      <span>PRODUCT VARIANTS & SIZES (e.g. 20ml, 50ml, 100ml)</span>
+                      <span className="rounded bg-[#C59B27]/20 border border-[#C59B27]/50 px-1.5 py-0.2 text-[9px] font-bold text-[#996515]">
+                        {variants.length} CONFIGURED
+                      </span>
+                    </label>
+                    <p className="mt-0.5 text-[10.5px] text-[#57524A]">
+                      Configure multiple bottle sizes or volumes with independent prices. Customers will see an interactive size selector on the product page.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '', price: '', mrp: '' })}
+                    className="flex items-center gap-1 border border-[#141311] bg-[#141311] px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-[#D4AF37] hover:bg-[#C59B27] hover:border-[#C59B27] hover:text-black transition-all rounded shadow-xs"
+                  >
+                    <Plus size={12} /> ADD VARIANT
+                  </button>
+                </div>
+
+                {/* Quick Presets Bar */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <span className="text-[9.5px] font-kufi font-bold text-[#78716C] uppercase">
+                    Quick Presets:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '20 ml', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 20 ml
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '50 ml', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 50 ml
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '100 ml', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 100 ml
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '3 ml', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 3 ml (Attar)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '6 ml', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 6 ml (Attar)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddVariant({ name: '12 ml (1 Tola)', price: '', mrp: '' })}
+                    className="rounded border border-[#C59B27]/40 bg-white px-2 py-0.5 text-[9.5px] font-semibold text-[#996515] hover:bg-[#C59B27] hover:text-black transition-colors"
+                  >
+                    + 12 ml (Attar)
+                  </button>
+                </div>
+
+                {/* Variants List */}
+                {variants.length === 0 ? (
+                  <div className="rounded border border-dashed border-[#C59B27]/40 bg-white/70 p-3 text-center text-[11px] text-[#78716C]">
+                    No variants added. The default bottle size and single base price above will be used. Click "+ 20 ml", "+ 50 ml", or "ADD VARIANT" above to configure multiple sizes with distinct prices.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {variants.map((v, idx) => {
+                      const vSelling = Number(v.price) || 0;
+                      const vMrp = Number(v.mrp) || 0;
+                      const vHasDiscount = vMrp > vSelling && vSelling > 0;
+                      const vPercent = vHasDiscount ? Math.round(((vMrp - vSelling) / vMrp) * 100) : 0;
+
+                      return (
+                        <div
+                          key={v.id || idx}
+                          className="flex flex-col sm:flex-row sm:items-center gap-2 border border-[#D9C8A9] bg-white p-2.5 rounded shadow-2xs"
+                        >
+                          {/* Variant Name / Size */}
+                          <div className="flex-1">
+                            <label className="font-kufi block font-bold text-[9px] uppercase tracking-wider text-[#996515]">
+                              VARIANT SIZE / TITLE *
+                            </label>
+                            <input
+                              required
+                              value={v.name}
+                              onChange={(e) => handleUpdateVariant(idx, 'name', e.target.value)}
+                              placeholder="e.g. 20 ml, 50 ml, 100 ml"
+                              className="mt-0.5 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-1.5 text-xs text-[#141311] focus:border-[#C59B27] focus:outline-none"
+                            />
+                          </div>
+
+                          {/* Variant Selling Price */}
+                          <div className="w-full sm:w-36">
+                            <label className="font-kufi block font-bold text-[9px] uppercase tracking-wider text-[#996515]">
+                              PRICE (₹) *
+                            </label>
+                            <input
+                              type="number"
+                              required
+                              value={v.price}
+                              onChange={(e) => handleUpdateVariant(idx, 'price', e.target.value)}
+                              placeholder="e.g. 1799"
+                              className="mt-0.5 w-full border border-[#C59B27]/60 bg-[#FAF7F2] p-1.5 text-xs font-bold text-[#141311] focus:border-[#C59B27] focus:outline-none"
+                            />
+                          </div>
+
+                          {/* Variant Slashed MRP (Optional) */}
+                          <div className="w-full sm:w-36">
+                            <label className="font-kufi block font-bold text-[9px] uppercase tracking-wider text-[#996515]">
+                              SLASHED MRP (₹)
+                            </label>
+                            <input
+                              type="number"
+                              value={v.mrp}
+                              onChange={(e) => handleUpdateVariant(idx, 'mrp', e.target.value)}
+                              placeholder="e.g. 2499 (Optional)"
+                              className="mt-0.5 w-full border border-[#D9C8A9] bg-[#FAF7F2] p-1.5 text-xs text-[#141311] focus:border-[#C59B27] focus:outline-none"
+                            />
+                          </div>
+
+                          {/* Discount tag preview & delete button */}
+                          <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-4 shrink-0">
+                            {vHasDiscount ? (
+                              <span className="inline-flex items-center rounded bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 text-[9px] font-black text-emerald-800">
+                                {vPercent}% OFF
+                              </span>
+                            ) : (
+                              <span className="hidden sm:inline-block w-12 text-center text-[9px] text-[#78716C]">—</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariant(idx)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Remove variant"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* MEDIA REQUIREMENTS PROMPT */}
@@ -1435,7 +1715,7 @@ export default function Admin() {
                   disabled={formLoading}
                   className="border border-[#141311] bg-[#141311] px-6 py-2.5 text-xs font-bold tracking-wider text-[#D4AF37] hover:bg-[#C59B27] hover:border-[#C59B27] hover:text-black disabled:opacity-50 transition-all shadow-xs"
                 >
-                  {formLoading ? 'SAVING...' : editingProductId ? 'UPDATE PRODUCT & PRICING' : 'SAVE PERFUME'}
+                  {formLoading ? 'SAVING...' : editingProductId ? 'UPDATE PRODUCT & VARIANTS' : 'SAVE PERFUME'}
                 </button>
               </div>
             </form>
@@ -1727,7 +2007,7 @@ export default function Admin() {
                         <option value="" disabled>-- Select a Product --</option>
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name} ({p.family}) — ₹{p.sellingPrice || p.price}
+                            {p.name} ({p.family}) — ₹{p.price}
                           </option>
                         ))}
                       </select>

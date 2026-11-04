@@ -110,23 +110,12 @@ export function getProductMedia(product) {
     }
   };
 
-  // 1. Explicit media list if defined
-  if (Array.isArray(product.media) && product.media.length > 0) {
-    for (const m of product.media) {
-      if (typeof m === 'string') {
-        addIfUnique({ url: m, type: isVideoUrl(m) ? 'video' : 'image' });
-      } else if (m && m.url) {
-        addIfUnique(m);
-      }
-    }
-  }
-
-  // 2. Primary image
+  // 1. Primary image
   if (product.image) {
     addIfUnique({ url: product.image, type: 'image', title: product.name });
   }
 
-  // 3. Additional images list
+  // 2. Additional images list
   if (Array.isArray(product.images)) {
     for (const img of product.images) {
       if (typeof img === 'string' && img.trim()) {
@@ -135,7 +124,7 @@ export function getProductMedia(product) {
     }
   }
 
-  // 4. Video field
+  // 3. Video field
   if (product.video && typeof product.video === 'string' && product.video.trim()) {
     addIfUnique({
       url: product.video.trim(),
@@ -160,11 +149,11 @@ export function getProductMedia(product) {
 }
 
 /**
- * Helper to normalize product pricing (MRP and Selling Price) & Media
+ * Helper to normalize product pricing (MRP and Price), Variants, and Media
  */
 export function normalizeProduct(p) {
-  const sellingPrice = Number(p.sellingPrice ?? p.price) || 0;
-  const mrp = p.mrp !== undefined && p.mrp !== null && p.mrp !== '' ? Number(p.mrp) : sellingPrice;
+  const price = Number(p.price ?? p.sellingPrice) || 0;
+  const mrp = p.mrp !== undefined && p.mrp !== null && p.mrp !== '' ? Number(p.mrp) : price;
 
   // Enrich missing images/video from initial demo catalog if matched
   const matchingInitial = initialProducts.find((ip) => ip.id === p.id);
@@ -176,19 +165,31 @@ export function normalizeProduct(p) {
 
   const video = p.video || matchingInitial?.video || '';
 
-  const media =
-    Array.isArray(p.media) && p.media.length > 0
-      ? p.media
-      : matchingInitial?.media || [];
+  const variants =
+    Array.isArray(p.variants) && p.variants.length > 0
+      ? p.variants
+          .map((v, i) => ({
+            id: v.id || `var-${i + 1}`,
+            name: String(v.name || '').trim(),
+            price: Number(v.price) || 0,
+            mrp:
+              v.mrp !== undefined && v.mrp !== null && v.mrp !== ''
+                ? Number(v.mrp)
+                : Number(v.price) || 0,
+          }))
+          .filter((v) => v.name)
+      : matchingInitial?.variants || [];
 
   return {
     ...p,
-    price: sellingPrice,
-    sellingPrice,
+    price,
+    sellingPrice: price, // Non-breaking alias for backward compatibility
     mrp,
+    size: p.size || variants[0]?.name || '50 ml',
+    image: p.image || images[0] || '',
     images,
     video,
-    media,
+    variants,
   };
 }
 
@@ -197,7 +198,7 @@ export function normalizeProduct(p) {
  */
 export function getProductDiscount(product) {
   if (!product) return { hasDiscount: false, percent: 0, savings: 0, mrp: 0, selling: 0 };
-  const selling = Number(product.sellingPrice ?? product.price) || 0;
+  const selling = Number(product.price ?? product.sellingPrice) || 0;
   const mrp = Number(product.mrp) || 0;
   if (mrp > selling && selling > 0) {
     const savings = mrp - selling;
@@ -208,11 +209,42 @@ export function getProductDiscount(product) {
 }
 
 /**
+ * Strips all legacy, duplicate, and redundant fields from a product object
+ * before persisting to Firestore or localStorage.
+ */
+export function sanitizeProductForStorage(p) {
+  const normalized = normalizeProduct(p);
+  return {
+    id: normalized.id,
+    name: normalized.name || '',
+    price: Number(normalized.price) || 0,
+    mrp: Number(normalized.mrp) || Number(normalized.price) || 0,
+    concentration: normalized.concentration || 'Eau de Parfum',
+    notes: normalized.notes || '',
+    family: normalized.family || 'Perfume',
+    size: normalized.size || normalized.variants?.[0]?.name || '50 ml',
+    description: normalized.description || '',
+    image: normalized.image || normalized.images?.[0] || '',
+    images:
+      Array.isArray(normalized.images) && normalized.images.length > 0
+        ? normalized.images
+        : normalized.image
+        ? [normalized.image]
+        : [],
+    video: normalized.video || '',
+    variants: Array.isArray(normalized.variants) ? normalized.variants : [],
+  };
+}
+
+/**
  * Retrieve products from localStorage, falling back to initial catalog.
+ * Automatically performs client-side schema migration if legacy fields or version 1 are detected.
  */
 export function getLocalProducts() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const schemaVersion = localStorage.getItem('ikk_perfume_schema_version');
+
     if (raw !== null) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -221,6 +253,12 @@ export function getLocalProducts() {
           ['Woody', 'Floral', 'Fresh', 'Oud'].includes(p.family)
         );
         if (!hasLegacyFamilies) {
+          // Automatic migration: strip sellingPrice, media, badge, and backfill variants
+          if (schemaVersion !== '2') {
+            const sanitized = parsed.map(sanitizeProductForStorage);
+            saveLocalProducts(sanitized);
+            return sanitized.map(normalizeProduct);
+          }
           return parsed.map(normalizeProduct);
         }
       }
@@ -228,15 +266,19 @@ export function getLocalProducts() {
   } catch (e) {
     console.warn('Could not read products from localStorage:', e);
   }
+
+  saveLocalProducts(initialProducts);
   return initialProducts.map(normalizeProduct);
 }
 
 /**
- * Persist products array to localStorage.
+ * Persist clean sanitized products array to localStorage.
  */
 export function saveLocalProducts(items) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    const sanitized = (items || []).map(sanitizeProductForStorage);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
+    localStorage.setItem('ikk_perfume_schema_version', '2');
   } catch (e) {
     console.warn('Could not write products to localStorage:', e);
   }
@@ -325,28 +367,43 @@ export async function createProduct(productData, imageFile, additionalImageFiles
       '-' +
       Date.now().toString(36);
 
-  const sellingPrice = Number(productData.price ?? productData.sellingPrice) || 0;
+  const price = Number(productData.price ?? productData.sellingPrice) || 0;
   const mrp =
     productData.mrp !== undefined && productData.mrp !== null && productData.mrp !== ''
       ? Number(productData.mrp)
-      : sellingPrice;
+      : price;
+
+  const variants = Array.isArray(productData.variants)
+    ? productData.variants
+        .map((v, i) => ({
+          id: v.id || `var-${i + 1}-${Date.now()}`,
+          name: String(v.name || '').trim(),
+          price: Number(v.price) || 0,
+          mrp:
+            v.mrp !== undefined && v.mrp !== null && v.mrp !== ''
+              ? Number(v.mrp)
+              : Number(v.price) || 0,
+        }))
+        .filter((v) => v.name && v.price > 0)
+    : [];
+
+  const primaryVariant = variants[0];
+  const resolvedSize = primaryVariant?.name || productData.size || '50 ml';
 
   const payload = {
     id,
     name: productData.name?.trim() || '',
-    price: sellingPrice,
-    sellingPrice,
+    price,
     mrp,
     concentration: productData.concentration || 'Eau de Parfum',
     notes: productData.notes?.trim() || '',
     family: productData.family || 'Perfume',
-    size: productData.size || '50 ml',
-    badge: productData.badge?.trim() || '',
+    size: resolvedSize,
     description: productData.description?.trim() || '',
     image: imageUrl || (images[0] || 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=85'),
     images: images.length > 0 ? images : [imageUrl || 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=85'],
     video: videoUrl,
-    media: productData.media || [],
+    variants,
   };
 
   // 1. Immediately persist to localStorage
@@ -399,7 +456,8 @@ export async function deleteProduct(id) {
 }
 
 /**
- * Seed initial sample catalog into Firestore and localStorage.
+ * Seed clean sample catalog into Firestore and localStorage.
+ * Overwrites documents to purge obsolete fields (sellingPrice, badge, media).
  */
 export async function seedProductsToFirestore() {
   saveLocalProducts(initialProducts);
@@ -410,7 +468,8 @@ export async function seedProductsToFirestore() {
 
   const results = [];
   for (const item of initialProducts) {
-    const { id, ...data } = item;
+    const cleanData = sanitizeProductForStorage(item);
+    const { id, ...data } = cleanData;
     try {
       const docRef = doc(db, COLLECTION_NAME, id);
       await setDoc(
@@ -418,8 +477,9 @@ export async function seedProductsToFirestore() {
         {
           ...data,
           updatedAt: serverTimestamp(),
+          schemaVersion: 2,
         },
-        { merge: true }
+        { merge: false } // Purges any obsolete/redundant fields in Firestore
       );
       results.push(id);
     } catch (err) {
@@ -428,4 +488,61 @@ export async function seedProductsToFirestore() {
   }
 
   return results;
+}
+
+/**
+ * Runs a full database schema migration across Firestore and localStorage.
+ * - Strips deprecated fields: sellingPrice, badge, media
+ * - Ensures variants, price, and mrp conform to schema v2
+ * - Overwrites all documents in the collection with clean schema
+ */
+export async function migrateFirestoreCatalog() {
+  const localProducts = getLocalProducts();
+  saveLocalProducts(localProducts);
+
+  if (!isFirebaseConfigured || !db) {
+    return {
+      migratedCount: localProducts.length,
+      storage: 'localStorage (Firebase credentials not in .env; offline catalog migrated)',
+      items: localProducts,
+    };
+  }
+
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    if (snapshot.empty) {
+      const seeded = await seedProductsToFirestore();
+      return {
+        migratedCount: seeded.length,
+        storage: 'Firestore (seeded clean catalog)',
+      };
+    }
+
+    let count = 0;
+    for (const docSnapshot of snapshot.docs) {
+      const raw = docSnapshot.data();
+      const clean = sanitizeProductForStorage({ id: docSnapshot.id, ...raw });
+      const { id, ...data } = clean;
+      const docRef = doc(db, COLLECTION_NAME, docSnapshot.id);
+
+      await setDoc(
+        docRef,
+        {
+          ...data,
+          updatedAt: serverTimestamp(),
+          schemaVersion: 2,
+        },
+        { merge: false } // Overwrite without merge to purge deprecated fields
+      );
+      count++;
+    }
+
+    return {
+      migratedCount: count,
+      storage: 'Cloud Firestore',
+    };
+  } catch (err) {
+    console.error('Firestore migration error:', err);
+    throw err;
+  }
 }
