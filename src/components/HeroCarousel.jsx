@@ -64,7 +64,7 @@ export default function HeroCarousel() {
     <section
       id="hero"
       aria-label="Hero Carousel"
-      className="relative min-h-[460px] sm:min-h-[540px] md:min-h-[620px] lg:min-h-[680px] w-full overflow-hidden bg-[#0A0A0A]"
+      className="relative min-h-[460px] sm:min-h-[540px] md:min-h-[620px] lg:min-h-[680px] w-full overflow-hidden bg-[#F4EBD9]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -92,9 +92,9 @@ export default function HeroCarousel() {
               <div className="max-w-2xl pointer-events-auto">
                 {/* Promotional Tag / Badge */}
                 {currentSlide.tag && (
-                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/70 bg-black/85 px-4 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.8)] backdrop-blur-md">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D4AF37] bg-black/90 px-4 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.8)] backdrop-blur-md">
                     <Sparkles size={13} className="text-[#D4AF37]" />
-                    <span className="text-[10px] font-semibold tracking-[0.25em] text-[#E5C378]">
+                    <span className="font-kufi text-[10px] font-bold tracking-[0.25em] text-[#D4AF37]">
                       {currentSlide.tag}
                     </span>
                   </div>
@@ -102,14 +102,14 @@ export default function HeroCarousel() {
 
                 {/* Subtitle / Eyebrow */}
                 {currentSlide.subtitle && (
-                  <p className="mb-2 text-xs font-semibold tracking-[0.28em] text-[#D4AF37] uppercase sm:text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
+                  <p className="font-kufi mb-2 text-xs font-bold tracking-[0.28em] text-[#D4AF37] uppercase sm:text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
                     {currentSlide.subtitle}
                   </p>
                 )}
 
-                {/* Main Headline */}
+                {/* Main Headline (Arabic Calligraphic Display) */}
                 {currentSlide.title && (
-                  <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.98] font-normal tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
+                  <h1 className="font-rakkas text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.98] font-normal tracking-wide text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
                     {currentSlide.title}
                   </h1>
                 )}
@@ -126,7 +126,7 @@ export default function HeroCarousel() {
                   <Link
                     to={targetLink}
                     onClick={(e) => e.stopPropagation()}
-                    className="group relative inline-flex items-center justify-center overflow-hidden border border-[#D4AF37] bg-[#D4AF37] px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-[#0A0A0A] shadow-[0_4px_20px_rgba(0,0,0,0.8)] transition-all hover:bg-[#E5C378] hover:border-[#E5C378]"
+                    className="group relative inline-flex items-center justify-center overflow-hidden border-2 border-[#D4AF37] bg-[#D4AF37] px-8 py-3.5 text-xs font-bold font-kufi tracking-[0.2em] text-[#0D0C0A] shadow-[0_4px_20px_rgba(0,0,0,0.8)] transition-all hover:bg-[#0D0C0A] hover:text-[#D4AF37] hover:border-[#D4AF37]"
                   >
                     <span>{currentSlide.ctaText || 'DISCOVER SCENTS'}</span>
                     <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">→</span>
@@ -135,7 +135,7 @@ export default function HeroCarousel() {
                   <Link
                     to="/shop"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center justify-center border border-white/40 bg-black/85 px-7 py-3.5 text-xs font-semibold tracking-[0.18em] text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm transition-all hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                    className="inline-flex items-center justify-center border-2 border-white/60 bg-black/85 px-7 py-3.5 text-xs font-semibold font-kufi tracking-[0.18em] text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm transition-all hover:border-[#D4AF37] hover:text-[#D4AF37]"
                   >
                     VIEW ALL CATALOG
                   </Link>

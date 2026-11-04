@@ -3,7 +3,7 @@ import { MapPin, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#D4AF37]/20 bg-[#080808] text-[#F5F5F7]">
+    <footer className="border-t-2 border-[#D4AF37]/40 bg-[#0A0908] text-[#F4EBD9]">
       {/* Main Footer Links - Balanced 3 Column Luxury Grid */}
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-3 md:gap-14 lg:gap-20 md:px-8">
         {/* Brand Info & Store Address */}
@@ -15,27 +15,27 @@ export default function Footer() {
               className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div>
-              <h2 className="font-editorial text-2xl sm:text-3xl font-bold tracking-wider text-[#F5F5F7] group-hover:text-[#D4AF37] transition-colors">
+              <h2 className="font-rakkas text-2xl sm:text-3xl font-normal tracking-wide text-white group-hover:text-[#D4AF37] transition-colors leading-tight">
                 I.K.K PERFUME
               </h2>
-              <p className="text-[9.5px] tracking-[0.28em] text-[#D4AF37] uppercase font-semibold">
+              <p className="font-kufi text-[9.5px] tracking-[0.28em] text-[#D4AF37] uppercase font-bold">
                 Haute Parfumerie & Islamic Books
               </p>
             </div>
           </Link>
 
-          <p className="mt-4 max-w-sm text-xs leading-6 text-zinc-400 font-light">
+          <p className="mt-4 max-w-sm text-xs leading-6 text-[#C4BCB0] font-light">
             An exploration of extraordinary essences, pure aged oud, alcohol-free attars, and sacred classical literature.
           </p>
 
           {/* Store Address */}
-          <div className="mt-6 border-t border-[#D4AF37]/15 pt-5">
-            <div className="flex items-center gap-1.5 text-[10.5px] font-semibold tracking-[0.2em] text-[#D4AF37] uppercase">
+          <div className="mt-6 border-t border-[#D4AF37]/20 pt-5">
+            <div className="flex items-center gap-1.5 text-[10.5px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase font-kufi">
               <MapPin size={13} className="text-[#D4AF37] shrink-0" />
               <span>BOUTIQUE STORE ADDRESS</span>
             </div>
-            <address className="mt-2.5 not-italic text-xs leading-relaxed text-zinc-300 font-light">
-              <p className="font-medium text-[#F5F5F7]">I.K.K. Perfume & Islamic Books</p>
+            <address className="mt-2.5 not-italic text-xs leading-relaxed text-[#C4BCB0] font-light">
+              <p className="font-medium text-white">I.K.K. Perfume & Islamic Books</p>
               <p>Jafar Nagar, Nagpur,</p>
               <p>Maharashtra 440013, India</p>
             </address>
@@ -53,10 +53,10 @@ export default function Footer() {
 
         {/* Collections (Categorized Strictly Under the 5 Departments) */}
         <div>
-          <h3 className="mb-4 text-xs font-semibold tracking-[0.25em] text-[#D4AF37] uppercase">
+          <h3 className="font-kufi mb-4 text-xs font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
             COLLECTIONS
           </h3>
-          <ul className="space-y-3 text-xs text-zinc-400">
+          <ul className="space-y-3 text-xs text-[#C4BCB0]">
             <li>
               <Link className="hover:text-[#D4AF37] transition-colors" to="/shop?family=Perfume">
                 Perfumes
@@ -82,8 +82,8 @@ export default function Footer() {
                 Islamic Books
               </Link>
             </li>
-            <li className="pt-2 border-t border-white/5">
-              <Link className="hover:text-[#D4AF37] text-zinc-300 transition-colors font-medium" to="/shop">
+            <li className="pt-2 border-t border-[#D4AF37]/20">
+              <Link className="hover:text-[#D4AF37] text-white transition-colors font-medium" to="/shop">
                 View All Creations ↗
               </Link>
             </li>
@@ -92,10 +92,10 @@ export default function Footer() {
 
         {/* The House (Only Home Page Components) */}
         <div>
-          <h3 className="mb-4 text-xs font-semibold tracking-[0.25em] text-[#D4AF37] uppercase">
+          <h3 className="font-kufi mb-4 text-xs font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
             THE HOUSE
           </h3>
-          <ul className="space-y-3 text-xs text-zinc-400">
+          <ul className="space-y-3 text-xs text-[#C4BCB0]">
             <li>
               <a href="/#hero" className="hover:text-[#D4AF37] transition-colors">
                 Featured Showcase
@@ -126,14 +126,14 @@ export default function Footer() {
       </div>
 
       {/* Copyright Notice */}
-      <div className="border-t border-[#D4AF37]/10 bg-[#050505] py-6 px-6">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-[11px] text-zinc-500">
+      <div className="border-t border-[#D4AF37]/20 bg-[#050505] py-6 px-6">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-[11px] text-[#8C8376]">
           <p>© {new Date().getFullYear()} I.K.K Perfume · All Rights Reserved.</p>
           <div className="flex items-center gap-6">
-            <p className="text-[10px] text-[#A38438]">
+            <p className="font-kufi text-[10px] text-[#D4AF37]">
               Inspired by haute oriental perfumery traditions.
             </p>
-            <Link to="/admin" className="text-zinc-500 hover:text-[#D4AF37] transition-colors">
+            <Link to="/admin" className="text-[#8C8376] hover:text-[#D4AF37] transition-colors">
               Admin Portal ↗
             </Link>
           </div>
