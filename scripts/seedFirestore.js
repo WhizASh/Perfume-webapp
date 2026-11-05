@@ -108,9 +108,10 @@ async function seed() {
     await setDoc(doc(db, 'products', id), {
       id,
       ...data,
+      schemaVersion: 2,
       updatedAt: serverTimestamp(),
-    }, { merge: true });
-    console.log(`  ✓ [${prod.family.toUpperCase()}] ${prod.name} (${id}) — MRP: ₹${prod.mrp} | Selling: ₹${prod.price}`);
+    }, { merge: false });
+    console.log(`  ✓ [${prod.family.toUpperCase()}] ${prod.name} (${id}) — Variants: ${prod.variants?.length || 0} | Base: ₹${prod.price} | MRP: ₹${prod.mrp}`);
   }
 
   // 5. Seed initial carousel slides

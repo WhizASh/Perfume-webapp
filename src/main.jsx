@@ -23,24 +23,30 @@ function App() {
 
   const handleAddToCart = (product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const cartItemId =
+        product.cartItemId ||
+        (product.selectedVariant ? `${product.id}-${product.selectedVariant.name}` : product.id);
+      const addQty = Number(product.quantity) > 0 ? Number(product.quantity) : 1;
+      const existingItem = prevCart.find((item) => (item.cartItemId || item.id) === cartItemId);
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+          (item.cartItemId || item.id) === cartItemId
+            ? { ...item, quantity: item.quantity + addQty }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, cartItemId, quantity: addQty }];
     });
     setOpen(true);
   };
 
-  const handleQuantityChange = (id, delta) => {
+  const handleQuantityChange = (cartItemId, delta) => {
     setCart((prevCart) =>
       prevCart
         .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity + delta } : item
+          (item.cartItemId || item.id) === cartItemId
+            ? { ...item, quantity: item.quantity + delta }
+            : item
         )
         .filter((item) => item.quantity > 0)
     );

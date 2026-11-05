@@ -6,6 +6,7 @@ import {
   createProduct,
   deleteProduct,
   seedProductsToFirestore,
+  migrateFirestoreCatalog,
 } from '../services/productsService';
 import {
   fetchCategories,
@@ -49,8 +50,8 @@ export function ProductProvider({ children }) {
     loadData();
   }, []);
 
-  const addProduct = async (productData, imageFile) => {
-    const saved = await createProduct(productData, imageFile);
+  const addProduct = async (productData, imageFile, additionalImageFiles, videoFile) => {
+    const saved = await createProduct(productData, imageFile, additionalImageFiles, videoFile);
     setProducts((prev) => {
       const idx = prev.findIndex((p) => p.id === saved.id);
       let next;
@@ -110,6 +111,12 @@ export function ProductProvider({ children }) {
     await loadData();
   };
 
+  const handleMigrateCatalog = async () => {
+    const res = await migrateFirestoreCatalog();
+    await loadData();
+    return res;
+  };
+
   // Dynamically compute unique fragrance families for navigation and filters
   const families = useMemo(() => {
     const famSet = new Set(['All']);
@@ -138,6 +145,7 @@ export function ProductProvider({ children }) {
         addCategory: handleAddCategory,
         removeCategory: handleRemoveCategory,
         seedCatalog,
+        migrateCatalog: handleMigrateCatalog,
       }}
     >
       {children}
